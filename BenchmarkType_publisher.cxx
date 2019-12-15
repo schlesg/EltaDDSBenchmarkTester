@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
 {
 	int buffer_count = 0;
 	int verbosity = 0;
-	int pubRate = 10;
+	int pubRate = 100;
 
 	if (argc >= 2) {
 		buffer_count = atoi(argv[1]);
