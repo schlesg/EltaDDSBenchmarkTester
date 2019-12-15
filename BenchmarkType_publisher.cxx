@@ -60,22 +60,35 @@ void publisher_main(int buffer_count, int sample_count, int verbosity, int sleep
 	for (int count = 0; count < sample_count || sample_count == 0; count++)
 	{
 		sample.seqNum() = count;
-		uint64_t start = std::chrono::duration_cast<std::chrono::nanoseconds> (std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 
-		sample.sourceTimestampSec() = std::chrono::duration_cast<std::chrono::seconds> (std::chrono::high_resolution_clock::now().time_since_epoch()).count();
-		sample.sourceTimestampNanosec() = std::chrono::duration_cast<std::chrono::nanoseconds> (std::chrono::high_resolution_clock::now().time_since_epoch()).count();
-		
+		std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
+		auto duration = now.time_since_epoch();
+
+		//auto seconds = std::chrono::duration_cast<std::chrono::seconds>(duration);
+		//duration -= seconds;
+		//auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+		//duration -= milliseconds;
+		auto microseconds = std::chrono::duration_cast<std::chrono::microseconds>(duration);
+		//duration -= microseconds;
+		//auto nanoseconds = std::chrono::duration_cast<std::chrono::nanoseconds>(duration);
+
+		//sample.sourceTimestampSec() = seconds.count();
+		//sample.sourceTimestampMillisec() = milliseconds.count();
+		sample.sourceTimestampMicrosec() = microseconds.count();
+		//sample.sourceTimestampNanosec() = nanoseconds.count();
+
+
 		if (verbosity == 0)
 			std::cout << "Writing BenchmarkMessageType, count " << count << std::endl;
 
 		writer.write(sample);
-		std::cout << "time: " << sample.sourceTimestampNanosec() << std::endl;
+		/*std::cout << "time: " << sample.sourceTimestampNanosec() << std::endl;
 
 		uint64_t now = std::chrono::duration_cast<std::chrono::nanoseconds> (std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 		std::cout << "now: " << now << std::endl;
-		std::cout << "Time difference: " << (now - start) << " nanoseconds" << std::endl;
+		std::cout << "Time difference: " << (now - start) << " nanoseconds" << std::endl;*/
 
-		std::this_thread::sleep_for(std::chrono::seconds(3));
+		std::this_thread::sleep_for(std::chrono::seconds(1));
 
 	}
 }

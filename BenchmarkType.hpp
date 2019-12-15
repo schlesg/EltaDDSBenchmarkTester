@@ -9,8 +9,8 @@ For more information, type 'rtiddsgen -help' at a command shell
 or consult the RTI Connext manual.
 */
 
-#ifndef BenchmarkType_223200946_hpp
-#define BenchmarkType_223200946_hpp
+#ifndef BenchmarkType_223201044_hpp
+#define BenchmarkType_223201044_hpp
 
 #include <iosfwd>
 
@@ -69,6 +69,8 @@ class NDDSUSERDllExport BenchmarkMessageType {
     BenchmarkMessageType(
         int32_t seqNum,
         rti::core::uint64 sourceTimestampSec,
+        rti::core::uint64 sourceTimestampMillisec,
+        rti::core::uint64 sourceTimestampMicrosec,
         rti::core::uint64 sourceTimestampNanosec,
         const rti::core::bounded_sequence<uint8_t, 100000>& buffer);
 
@@ -108,6 +110,30 @@ class NDDSUSERDllExport BenchmarkMessageType {
         m_sourceTimestampSec_ = value;
     }
 
+    rti::core::uint64& sourceTimestampMillisec() OMG_NOEXCEPT {
+        return m_sourceTimestampMillisec_;
+    }
+
+    const rti::core::uint64& sourceTimestampMillisec() const OMG_NOEXCEPT {
+        return m_sourceTimestampMillisec_;
+    }
+
+    void sourceTimestampMillisec(rti::core::uint64 value) {
+        m_sourceTimestampMillisec_ = value;
+    }
+
+    rti::core::uint64& sourceTimestampMicrosec() OMG_NOEXCEPT {
+        return m_sourceTimestampMicrosec_;
+    }
+
+    const rti::core::uint64& sourceTimestampMicrosec() const OMG_NOEXCEPT {
+        return m_sourceTimestampMicrosec_;
+    }
+
+    void sourceTimestampMicrosec(rti::core::uint64 value) {
+        m_sourceTimestampMicrosec_ = value;
+    }
+
     rti::core::uint64& sourceTimestampNanosec() OMG_NOEXCEPT {
         return m_sourceTimestampNanosec_;
     }
@@ -141,6 +167,8 @@ class NDDSUSERDllExport BenchmarkMessageType {
 
     int32_t m_seqNum_;
     rti::core::uint64 m_sourceTimestampSec_;
+    rti::core::uint64 m_sourceTimestampMillisec_;
+    rti::core::uint64 m_sourceTimestampMicrosec_;
     rti::core::uint64 m_sourceTimestampNanosec_;
     rti::core::bounded_sequence<uint8_t, 100000> m_buffer_;
 
@@ -227,5 +255,5 @@ namespace rti {
 #define NDDSUSERDllExport
 #endif
 
-#endif // BenchmarkType_223200946_hpp
+#endif // BenchmarkType_223201044_hpp
 

@@ -1,6 +1,8 @@
 struct BenchmarkMessageType{
 	long seqNum;
 	unsigned long long sourceTimestampSec;
+    unsigned long long sourceTimestampMillisec;
+    unsigned long long sourceTimestampMicrosec;
     unsigned long long sourceTimestampNanosec;
 	sequence<octet, 100000> buffer;
 };
