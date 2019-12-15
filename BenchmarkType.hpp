@@ -9,8 +9,8 @@ For more information, type 'rtiddsgen -help' at a command shell
 or consult the RTI Connext manual.
 */
 
-#ifndef BenchmarkType_223200936_hpp
-#define BenchmarkType_223200936_hpp
+#ifndef BenchmarkType_223200946_hpp
+#define BenchmarkType_223200946_hpp
 
 #include <iosfwd>
 
@@ -68,8 +68,8 @@ class NDDSUSERDllExport BenchmarkMessageType {
 
     BenchmarkMessageType(
         int32_t seqNum,
-        uint32_t sourceTimestampSec,
-        uint32_t sourceTimestampNanosec,
+        rti::core::uint64 sourceTimestampSec,
+        rti::core::uint64 sourceTimestampNanosec,
         const rti::core::bounded_sequence<uint8_t, 100000>& buffer);
 
     #ifdef RTI_CXX11_RVALUE_REFERENCES
@@ -96,27 +96,27 @@ class NDDSUSERDllExport BenchmarkMessageType {
         m_seqNum_ = value;
     }
 
-    uint32_t& sourceTimestampSec() OMG_NOEXCEPT {
+    rti::core::uint64& sourceTimestampSec() OMG_NOEXCEPT {
         return m_sourceTimestampSec_;
     }
 
-    const uint32_t& sourceTimestampSec() const OMG_NOEXCEPT {
+    const rti::core::uint64& sourceTimestampSec() const OMG_NOEXCEPT {
         return m_sourceTimestampSec_;
     }
 
-    void sourceTimestampSec(uint32_t value) {
+    void sourceTimestampSec(rti::core::uint64 value) {
         m_sourceTimestampSec_ = value;
     }
 
-    uint32_t& sourceTimestampNanosec() OMG_NOEXCEPT {
+    rti::core::uint64& sourceTimestampNanosec() OMG_NOEXCEPT {
         return m_sourceTimestampNanosec_;
     }
 
-    const uint32_t& sourceTimestampNanosec() const OMG_NOEXCEPT {
+    const rti::core::uint64& sourceTimestampNanosec() const OMG_NOEXCEPT {
         return m_sourceTimestampNanosec_;
     }
 
-    void sourceTimestampNanosec(uint32_t value) {
+    void sourceTimestampNanosec(rti::core::uint64 value) {
         m_sourceTimestampNanosec_ = value;
     }
 
@@ -140,8 +140,8 @@ class NDDSUSERDllExport BenchmarkMessageType {
   private:
 
     int32_t m_seqNum_;
-    uint32_t m_sourceTimestampSec_;
-    uint32_t m_sourceTimestampNanosec_;
+    rti::core::uint64 m_sourceTimestampSec_;
+    rti::core::uint64 m_sourceTimestampNanosec_;
     rti::core::bounded_sequence<uint8_t, 100000> m_buffer_;
 
 };
@@ -227,5 +227,5 @@ namespace rti {
 #define NDDSUSERDllExport
 #endif
 
-#endif // BenchmarkType_223200936_hpp
+#endif // BenchmarkType_223200946_hpp
 
