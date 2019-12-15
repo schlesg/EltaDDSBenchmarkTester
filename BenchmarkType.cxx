@@ -23,25 +23,16 @@ or consult the RTI Connext manual.
 
 BenchmarkMessageType::BenchmarkMessageType() :
     m_seqNum_ (0) ,
-    m_sourceTimestampSec_ (0ull) ,
-    m_sourceTimestampMillisec_ (0ull) ,
-    m_sourceTimestampMicrosec_ (0ull) ,
-    m_sourceTimestampNanosec_ (0ull)  {
+    m_sourceTimestampMicrosec_ (0ull)  {
 }   
 
 BenchmarkMessageType::BenchmarkMessageType (
     int32_t seqNum,
-    rti::core::uint64 sourceTimestampSec,
-    rti::core::uint64 sourceTimestampMillisec,
     rti::core::uint64 sourceTimestampMicrosec,
-    rti::core::uint64 sourceTimestampNanosec,
     const rti::core::bounded_sequence<uint8_t, 100000>& buffer)
     :
         m_seqNum_( seqNum ),
-        m_sourceTimestampSec_( sourceTimestampSec ),
-        m_sourceTimestampMillisec_( sourceTimestampMillisec ),
         m_sourceTimestampMicrosec_( sourceTimestampMicrosec ),
-        m_sourceTimestampNanosec_( sourceTimestampNanosec ),
         m_buffer_( buffer ) {
 }
 
@@ -49,13 +40,7 @@ BenchmarkMessageType::BenchmarkMessageType (
 #ifdef RTI_CXX11_NO_IMPLICIT_MOVE_OPERATIONS
 BenchmarkMessageType::BenchmarkMessageType(BenchmarkMessageType&& other_) OMG_NOEXCEPT  :m_seqNum_ (std::move(other_.m_seqNum_))
 ,
-m_sourceTimestampSec_ (std::move(other_.m_sourceTimestampSec_))
-,
-m_sourceTimestampMillisec_ (std::move(other_.m_sourceTimestampMillisec_))
-,
 m_sourceTimestampMicrosec_ (std::move(other_.m_sourceTimestampMicrosec_))
-,
-m_sourceTimestampNanosec_ (std::move(other_.m_sourceTimestampNanosec_))
 ,
 m_buffer_ (std::move(other_.m_buffer_))
 {
@@ -73,10 +58,7 @@ void BenchmarkMessageType::swap(BenchmarkMessageType& other_)  OMG_NOEXCEPT
 {
     using std::swap;
     swap(m_seqNum_, other_.m_seqNum_);
-    swap(m_sourceTimestampSec_, other_.m_sourceTimestampSec_);
-    swap(m_sourceTimestampMillisec_, other_.m_sourceTimestampMillisec_);
     swap(m_sourceTimestampMicrosec_, other_.m_sourceTimestampMicrosec_);
-    swap(m_sourceTimestampNanosec_, other_.m_sourceTimestampNanosec_);
     swap(m_buffer_, other_.m_buffer_);
 }  
 
@@ -84,16 +66,7 @@ bool BenchmarkMessageType::operator == (const BenchmarkMessageType& other_) cons
     if (m_seqNum_ != other_.m_seqNum_) {
         return false;
     }
-    if (m_sourceTimestampSec_ != other_.m_sourceTimestampSec_) {
-        return false;
-    }
-    if (m_sourceTimestampMillisec_ != other_.m_sourceTimestampMillisec_) {
-        return false;
-    }
     if (m_sourceTimestampMicrosec_ != other_.m_sourceTimestampMicrosec_) {
-        return false;
-    }
-    if (m_sourceTimestampNanosec_ != other_.m_sourceTimestampNanosec_) {
         return false;
     }
     if (m_buffer_ != other_.m_buffer_) {
@@ -110,10 +83,7 @@ std::ostream& operator << (std::ostream& o,const BenchmarkMessageType& sample)
     rti::util::StreamFlagSaver flag_saver (o);
     o <<"[";
     o << "seqNum: " << sample.seqNum()<<", ";
-    o << "sourceTimestampSec: " << sample.sourceTimestampSec()<<", ";
-    o << "sourceTimestampMillisec: " << sample.sourceTimestampMillisec()<<", ";
     o << "sourceTimestampMicrosec: " << sample.sourceTimestampMicrosec()<<", ";
-    o << "sourceTimestampNanosec: " << sample.sourceTimestampNanosec()<<", ";
     o << "buffer: " << sample.buffer() ;
     o <<"]";
     return o;
@@ -136,7 +106,7 @@ namespace rti {
 
                 static DDS_TypeCode BenchmarkMessageType_g_tc_buffer_sequence;
 
-                static DDS_TypeCode_Member BenchmarkMessageType_g_tc_members[6]=
+                static DDS_TypeCode_Member BenchmarkMessageType_g_tc_members[3]=
                 {
 
                     {
@@ -158,7 +128,7 @@ namespace rti {
                         RTICdrTypeCodeAnnotations_INITIALIZER
                     }, 
                     {
-                        (char *)"sourceTimestampSec",/* Member name */
+                        (char *)"sourceTimestampMicrosec",/* Member name */
                         {
                             1,/* Representation ID */
                             DDS_BOOLEAN_FALSE,/* Is a pointer? */
@@ -176,63 +146,9 @@ namespace rti {
                         RTICdrTypeCodeAnnotations_INITIALIZER
                     }, 
                     {
-                        (char *)"sourceTimestampMillisec",/* Member name */
-                        {
-                            2,/* Representation ID */
-                            DDS_BOOLEAN_FALSE,/* Is a pointer? */
-                            -1, /* Bitfield bits */
-                            NULL/* Member type code is assigned later */
-                        },
-                        0, /* Ignored */
-                        0, /* Ignored */
-                        0, /* Ignored */
-                        NULL, /* Ignored */
-                        RTI_CDR_REQUIRED_MEMBER, /* Is a key? */
-                        DDS_PUBLIC_MEMBER,/* Member visibility */
-                        1,
-                        NULL, /* Ignored */
-                        RTICdrTypeCodeAnnotations_INITIALIZER
-                    }, 
-                    {
-                        (char *)"sourceTimestampMicrosec",/* Member name */
-                        {
-                            3,/* Representation ID */
-                            DDS_BOOLEAN_FALSE,/* Is a pointer? */
-                            -1, /* Bitfield bits */
-                            NULL/* Member type code is assigned later */
-                        },
-                        0, /* Ignored */
-                        0, /* Ignored */
-                        0, /* Ignored */
-                        NULL, /* Ignored */
-                        RTI_CDR_REQUIRED_MEMBER, /* Is a key? */
-                        DDS_PUBLIC_MEMBER,/* Member visibility */
-                        1,
-                        NULL, /* Ignored */
-                        RTICdrTypeCodeAnnotations_INITIALIZER
-                    }, 
-                    {
-                        (char *)"sourceTimestampNanosec",/* Member name */
-                        {
-                            4,/* Representation ID */
-                            DDS_BOOLEAN_FALSE,/* Is a pointer? */
-                            -1, /* Bitfield bits */
-                            NULL/* Member type code is assigned later */
-                        },
-                        0, /* Ignored */
-                        0, /* Ignored */
-                        0, /* Ignored */
-                        NULL, /* Ignored */
-                        RTI_CDR_REQUIRED_MEMBER, /* Is a key? */
-                        DDS_PUBLIC_MEMBER,/* Member visibility */
-                        1,
-                        NULL, /* Ignored */
-                        RTICdrTypeCodeAnnotations_INITIALIZER
-                    }, 
-                    {
                         (char *)"buffer",/* Member name */
                         {
-                            5,/* Representation ID */
+                            2,/* Representation ID */
                             DDS_BOOLEAN_FALSE,/* Is a pointer? */
                             -1, /* Bitfield bits */
                             NULL/* Member type code is assigned later */
@@ -259,7 +175,7 @@ namespace rti {
                         0, /* Ignored */
                         0, /* Ignored */
                         NULL, /* Ignored */
-                        6, /* Number of members */
+                        3, /* Number of members */
                         BenchmarkMessageType_g_tc_members, /* Members */
                         DDS_VM_NONE, /* Ignored */
                         RTICdrTypeCodeAnnotations_INITIALIZER,
@@ -279,10 +195,7 @@ namespace rti {
                 BenchmarkMessageType_g_tc_buffer_sequence._data._typeCode = (RTICdrTypeCode *)&DDS_g_tc_octet;
                 BenchmarkMessageType_g_tc_members[0]._representation._typeCode = (RTICdrTypeCode *)&DDS_g_tc_long;
                 BenchmarkMessageType_g_tc_members[1]._representation._typeCode = (RTICdrTypeCode *)&DDS_g_tc_ulonglong;
-                BenchmarkMessageType_g_tc_members[2]._representation._typeCode = (RTICdrTypeCode *)&DDS_g_tc_ulonglong;
-                BenchmarkMessageType_g_tc_members[3]._representation._typeCode = (RTICdrTypeCode *)&DDS_g_tc_ulonglong;
-                BenchmarkMessageType_g_tc_members[4]._representation._typeCode = (RTICdrTypeCode *)&DDS_g_tc_ulonglong;
-                BenchmarkMessageType_g_tc_members[5]._representation._typeCode = (RTICdrTypeCode *)& BenchmarkMessageType_g_tc_buffer_sequence;
+                BenchmarkMessageType_g_tc_members[2]._representation._typeCode = (RTICdrTypeCode *)& BenchmarkMessageType_g_tc_buffer_sequence;
 
                 /* Initialize the values for member annotations. */
                 BenchmarkMessageType_g_tc_members[0]._annotations._defaultValue._d = RTI_XCDR_TK_LONG;
@@ -299,27 +212,6 @@ namespace rti {
                 BenchmarkMessageType_g_tc_members[1]._annotations._maxValue._d = RTI_XCDR_TK_ULONGLONG;
                 BenchmarkMessageType_g_tc_members[1]._annotations._maxValue._u.ulong_long_value = RTIXCdrUnsignedLongLong_MAX;
 
-                BenchmarkMessageType_g_tc_members[2]._annotations._defaultValue._d = RTI_XCDR_TK_ULONGLONG;
-                BenchmarkMessageType_g_tc_members[2]._annotations._defaultValue._u.ulong_long_value = 0ull;
-                BenchmarkMessageType_g_tc_members[2]._annotations._minValue._d = RTI_XCDR_TK_ULONGLONG;
-                BenchmarkMessageType_g_tc_members[2]._annotations._minValue._u.ulong_long_value = RTIXCdrUnsignedLongLong_MIN;
-                BenchmarkMessageType_g_tc_members[2]._annotations._maxValue._d = RTI_XCDR_TK_ULONGLONG;
-                BenchmarkMessageType_g_tc_members[2]._annotations._maxValue._u.ulong_long_value = RTIXCdrUnsignedLongLong_MAX;
-
-                BenchmarkMessageType_g_tc_members[3]._annotations._defaultValue._d = RTI_XCDR_TK_ULONGLONG;
-                BenchmarkMessageType_g_tc_members[3]._annotations._defaultValue._u.ulong_long_value = 0ull;
-                BenchmarkMessageType_g_tc_members[3]._annotations._minValue._d = RTI_XCDR_TK_ULONGLONG;
-                BenchmarkMessageType_g_tc_members[3]._annotations._minValue._u.ulong_long_value = RTIXCdrUnsignedLongLong_MIN;
-                BenchmarkMessageType_g_tc_members[3]._annotations._maxValue._d = RTI_XCDR_TK_ULONGLONG;
-                BenchmarkMessageType_g_tc_members[3]._annotations._maxValue._u.ulong_long_value = RTIXCdrUnsignedLongLong_MAX;
-
-                BenchmarkMessageType_g_tc_members[4]._annotations._defaultValue._d = RTI_XCDR_TK_ULONGLONG;
-                BenchmarkMessageType_g_tc_members[4]._annotations._defaultValue._u.ulong_long_value = 0ull;
-                BenchmarkMessageType_g_tc_members[4]._annotations._minValue._d = RTI_XCDR_TK_ULONGLONG;
-                BenchmarkMessageType_g_tc_members[4]._annotations._minValue._u.ulong_long_value = RTIXCdrUnsignedLongLong_MIN;
-                BenchmarkMessageType_g_tc_members[4]._annotations._maxValue._d = RTI_XCDR_TK_ULONGLONG;
-                BenchmarkMessageType_g_tc_members[4]._annotations._maxValue._u.ulong_long_value = RTIXCdrUnsignedLongLong_MAX;
-
                 BenchmarkMessageType_g_tc._data._sampleAccessInfo = sample_access_info();
                 BenchmarkMessageType_g_tc._data._typePlugin = type_plugin_info();    
 
@@ -334,7 +226,7 @@ namespace rti {
 
                 BenchmarkMessageType *sample;
 
-                static RTIXCdrMemberAccessInfo BenchmarkMessageType_g_memberAccessInfos[6] =
+                static RTIXCdrMemberAccessInfo BenchmarkMessageType_g_memberAccessInfos[3] =
                 {RTIXCdrMemberAccessInfo_INITIALIZER};
 
                 static RTIXCdrSampleAccessInfo BenchmarkMessageType_g_sampleAccessInfo = 
@@ -355,18 +247,9 @@ namespace rti {
                 (RTIXCdrUnsignedLong) ((char *)&sample->seqNum() - (char *)sample);
 
                 BenchmarkMessageType_g_memberAccessInfos[1].bindingMemberValueOffset[0] = 
-                (RTIXCdrUnsignedLong) ((char *)&sample->sourceTimestampSec() - (char *)sample);
-
-                BenchmarkMessageType_g_memberAccessInfos[2].bindingMemberValueOffset[0] = 
-                (RTIXCdrUnsignedLong) ((char *)&sample->sourceTimestampMillisec() - (char *)sample);
-
-                BenchmarkMessageType_g_memberAccessInfos[3].bindingMemberValueOffset[0] = 
                 (RTIXCdrUnsignedLong) ((char *)&sample->sourceTimestampMicrosec() - (char *)sample);
 
-                BenchmarkMessageType_g_memberAccessInfos[4].bindingMemberValueOffset[0] = 
-                (RTIXCdrUnsignedLong) ((char *)&sample->sourceTimestampNanosec() - (char *)sample);
-
-                BenchmarkMessageType_g_memberAccessInfos[5].bindingMemberValueOffset[0] = 
+                BenchmarkMessageType_g_memberAccessInfos[2].bindingMemberValueOffset[0] = 
                 (RTIXCdrUnsignedLong) ((char *)&sample->buffer() - (char *)sample);
 
                 BenchmarkMessageType_g_sampleAccessInfo.memberAccessInfos = 
@@ -492,10 +375,7 @@ namespace dds {
         void topic_type_support<BenchmarkMessageType>::reset_sample(BenchmarkMessageType& sample) 
         {
             sample.seqNum(0);
-            sample.sourceTimestampSec(0ull);
-            sample.sourceTimestampMillisec(0ull);
             sample.sourceTimestampMicrosec(0ull);
-            sample.sourceTimestampNanosec(0ull);
             rti::topic::reset_sample(sample.buffer());
         }
 

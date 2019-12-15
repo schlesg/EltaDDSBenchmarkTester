@@ -9,8 +9,8 @@ For more information, type 'rtiddsgen -help' at a command shell
 or consult the RTI Connext manual.
 */
 
-#ifndef BenchmarkTypePlugin_223201044_h
-#define BenchmarkTypePlugin_223201044_h
+#ifndef BenchmarkTypePlugin_223200906_h
+#define BenchmarkTypePlugin_223200906_h
 
 #include "BenchmarkType.hpp"
 
@@ -190,5 +190,5 @@ BenchmarkMessageTypePlugin_delete(struct PRESTypePlugin *);
 #define NDDSUSERDllExport
 #endif
 
-#endif /* BenchmarkTypePlugin_223201044_h */
+#endif /* BenchmarkTypePlugin_223200906_h */
 

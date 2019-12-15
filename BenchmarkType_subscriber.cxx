@@ -28,25 +28,11 @@ public:
 
 				std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
 				auto duration = now.time_since_epoch();
-
-				//auto seconds = std::chrono::duration_cast<std::chrono::seconds>(duration);
-				//duration -= seconds;
-				//auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
-				//duration -= milliseconds;
 				auto microseconds = std::chrono::duration_cast<std::chrono::microseconds>(duration);
-				//duration -= microseconds;
-				//auto nanoseconds = std::chrono::duration_cast<std::chrono::nanoseconds>(duration);
+				std::cout << sample_it->data().seqNum() << " microsec diff = " <<
+					microseconds.count() - sample_it->data().sourceTimestampMicrosec() << std::endl;
 
-				std::cout << sample_it->data().seqNum() << " microsec diff = " << microseconds.count() - sample_it->data().sourceTimestampMicrosec() << std::endl;
-				//std::cout << sample_it->data().sourceTimestampMillisec() << ":" << sample_it->data().sourceTimestampMicrosec() << ":" << sample_it->data().sourceTimestampNanosec() << std::endl;
-				//std::cout << milliseconds.count() << ":" << microseconds.count() << ":" << microseconds.count() << std::endl << std::endl;
-
-				/*uint64_t sampleTime = sample_it->data().sourceTimestampNanosec();
-				uint64_t now = std::chrono::duration_cast<std::chrono::nanoseconds> (std::chrono::high_resolution_clock::now().time_since_epoch()).count();
-
-				std::cout << "SampleTime :" << sampleTime << std::endl;
-				std::cout << "nowTime :" << now << std::endl;
-				std::cout << "Time difference: " << (now - sampleTime) << " nanoseconds" << std::endl;*/
+				//std::cout << sample_it->data().buffer().size() << std::endl;
 				
 			}
 		}
