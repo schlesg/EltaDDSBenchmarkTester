@@ -33,7 +33,7 @@ public:
 					microseconds.count() - sample_it->data().sourceTimestampMicrosec() << std::endl;
 
 				//std::cout << sample_it->data().buffer().size() << std::endl;
-				
+
 			}
 		}
 	}
@@ -45,15 +45,16 @@ public:
 
 private:
 	int count_;
+
 };
 
-void subscriber_main(int sample_count)
+void subscriber_main(int sample_count, std::string readFromTopic, std::string writeToTopic)
 {
 	// Create a DomainParticipant with default Qos
 	dds::domain::DomainParticipant participant(0);
 
 	// Create a Topic -- and automatically register the type
-	dds::topic::Topic<BenchmarkMessageType> topic(participant, "L3");
+	dds::topic::Topic<BenchmarkMessageType> topic(participant, readFromTopic);
 
 	// Create a DataReader with default Qos (Subscriber created in-line)
 	BenchmarkMessageTypeReaderListener listener;
@@ -64,7 +65,7 @@ void subscriber_main(int sample_count)
 		&listener,
 		dds::core::status::StatusMask::data_available());
 
-	while (listener.count() < sample_count || sample_count == 0) 
+	while (listener.count() < sample_count || sample_count == 0)
 	{
 		//std::cout << "BenchmarkMessageType subscriber sleeping for 4 sec..." << std::endl;
 
@@ -80,18 +81,25 @@ int main(int argc, char *argv[])
 {
 
 	int sample_count = 0; // infinite loop
-
+	std::string readFromTopic = "L1";
+	std::string writeToTopic = "L3";
 	if (argc >= 2) {
 		sample_count = atoi(argv[2]);
 	}
-
-	// To turn on additional logging, include <rti/config/Logger.hpp> and
-	// uncomment the following line:
-	// rti::config::Logger::instance().verbosity(rti::config::Verbosity::STATUS_ALL);
-
+	if (argc >= 3) {
+		readFromTopic = atoi(argv[3]);
+	}
+	if (argc >= 4) {
+		writeToTopic = atoi(argv[4]);
+	}
+//
+//	// To turn on additional logging, include <rti/config/Logger.hpp> and
+//	// uncomment the following line:
+//	// rti::config::Logger::instance().verbosity(rti::config::Verbosity::STATUS_ALL);
+//
 	try
 	{
-		subscriber_main(sample_count);
+		subscriber_main(sample_count, readFromTopic, writeToTopic);
 	}
 	catch (const std::exception& ex)
 	{
@@ -99,13 +107,13 @@ int main(int argc, char *argv[])
 		std::cerr << "Exception in subscriber_main(): " << ex.what() << std::endl;
 		return -1;
 	}
-
-	// RTI Connext provides a finalize_participant_factory() method
-	// if you want to release memory used by the participant factory singleton.
-	// Uncomment the following line to release the singleton:
-	//
-	// dds::domain::DomainParticipant::finalize_participant_factory();
-
+//
+//	// RTI Connext provides a finalize_participant_factory() method
+//	// if you want to release memory used by the participant factory singleton.
+//	// Uncomment the following line to release the singleton:
+//	//
+//	// dds::domain::DomainParticipant::finalize_participant_factory();
+//
 	return 0;
 }
-
+//
