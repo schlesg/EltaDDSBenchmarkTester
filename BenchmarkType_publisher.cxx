@@ -76,20 +76,54 @@ void publisher_main(int buffer_count, int pubRate, int verbosity)
 	}
 }
 
+void printUsage()
+{
+	const std::string USAGE(
+		"BenchmarkType_publisher [options]\n"
+		"Options:\n"
+		"\t-d, -domainId: Domain ID (default 0)\n"
+		"\t-b, -bufferCount: Size of buffer message to send (default 0)\n"
+		"\t-r, -rate: Publisher massage rate ""exiting (default 100)\n");
+
+	srand(time(NULL));
+}
+
 int main(int argc, char *argv[])
 {
 	int buffer_count = 0;
 	int verbosity = 0;
-	int pubRate = 100;
+	int pubRate = 10;
+	int domain_id = 0;
 
-	if (argc >= 2) {
-		buffer_count = atoi(argv[1]);
-	}
-	if (argc >= 3) {
-		pubRate = atoi(argv[2]);
-	}
-	if (argc >= 4) {
-		verbosity = atoi(argv[3]);
+	for (int i = 0; i < argc; i++)
+	{
+		if (strcmp(argv[i], "-d") == 0 || strcmp(argv[i], "-domainId") == 0)
+		{
+			if (i != argc - 1)
+			{
+				domain_id = atoi(argv[++i]);
+			}
+		}
+
+		else if (strcmp(argv[i], "-b") == 0 || strcmp(argv[i], "-bufferCount") == 0)
+		{
+			if (i != argc - 1)
+			{
+				buffer_count = atoi(argv[++i]);
+			}
+		}
+		else if (strcmp(argv[i], "-r") == 0 || strcmp(argv[i], "-rate") == 0)
+		{
+			if (i != argc - 1)
+			{
+				pubRate = atoi(argv[++i]);
+			}
+		}
+		else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "-help") == 0)
+		{
+			printUsage();
+			return 0;
+		}
 	}
 
 	try
@@ -103,11 +137,7 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	// RTI Connext provides a finalize_participant_factory() method
-	// if you want to release memory used by the participant factory singleton.
-	// Uncomment the following line to release the singleton:
-	//
-	// dds::domain::DomainParticipant::finalize_participant_factory();
+	dds::domain::DomainParticipant::finalize_participant_factory();
 
 	return 0;
 }

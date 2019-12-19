@@ -261,6 +261,7 @@
     </BuildLog>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BenchmarkType_subscriber_main.cxx" />
     <ClCompile Include="BenchmarkType_subscriber.cxx">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -292,6 +293,7 @@
   <ItemGroup>
     <ClInclude Include="BenchmarkType.hpp" />
     <ClInclude Include="BenchmarkTypePlugin.hpp" />
+    <ClInclude Include="BenchmarkType_subscriber.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="USER_QOS_PROFILES.xml" />

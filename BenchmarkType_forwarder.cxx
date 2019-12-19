@@ -1,119 +1,50 @@
-#include <algorithm>
-#include <iostream>
+#include <dds/pub/ddspub.hpp>
+#include "BenchmarkType_forwarder.hpp"
 
-#include <dds/sub/ddssub.hpp>
-#include <dds/core/ddscore.hpp>
-// Or simply include <dds/dds.hpp> 
-
-#include "BenchmarkType.hpp"
-
-class BenchmarkMessageTypeReaderListener : public dds::sub::NoOpDataReaderListener<BenchmarkMessageType> {
-public:
-
-	BenchmarkMessageTypeReaderListener() : count_(0)
-	{
-	}
-
-	void on_data_available(dds::sub::DataReader<BenchmarkMessageType>& reader)
-	{
-		// Take all samples
-		dds::sub::LoanedSamples<BenchmarkMessageType> samples = reader.take();
-
-		for (dds::sub::LoanedSamples<BenchmarkMessageType>::iterator sample_it = samples.begin();
-			sample_it != samples.end(); sample_it++) {
-
-			if (sample_it->info().valid()) {
-				count_++;
-				//std::cout << sample_it->data() << std::endl;
-
-				std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
-				auto duration = now.time_since_epoch();
-				auto microseconds = std::chrono::duration_cast<std::chrono::microseconds>(duration);
-				std::cout << sample_it->data().seqNum() << " microsec diff = " <<
-					microseconds.count() - sample_it->data().sourceTimestampMicrosec() << std::endl;
-
-				//std::cout << sample_it->data().buffer().size() << std::endl;
-
-			}
-		}
-	}
-
-	int count() const
-	{
-		return count_;
-	}
-
-private:
-	int count_;
-
-};
-
-void subscriber_main(int sample_count, std::string readFromTopic, std::string writeToTopic)
+BenchmarkType_forwarder::BenchmarkType_forwarder(DDS_DomainId_t domain_id, int thread_pool_size, std::string readFromTopic, std::string writeToTopic)
+	: receiver_(dds::core::null)
 {
 	// Create a DomainParticipant with default Qos
-	dds::domain::DomainParticipant participant(0);
+	dds::domain::DomainParticipant participant(domain_id);
 
 	// Create a Topic -- and automatically register the type
-	dds::topic::Topic<BenchmarkMessageType> topic(participant, readFromTopic);
+	dds::topic::Topic<BenchmarkMessageType> topicFrom(participant, readFromTopic);
+	dds::topic::Topic<BenchmarkMessageType> topicTo(participant, writeToTopic);
 
 	// Create a DataReader with default Qos (Subscriber created in-line)
-	BenchmarkMessageTypeReaderListener listener;
-	dds::sub::DataReader<BenchmarkMessageType> reader(
-		dds::sub::Subscriber(participant),
-		topic,
-		dds::core::QosProvider::Default().datareader_qos(),
-		&listener,
-		dds::core::status::StatusMask::data_available());
+	receiver_ = dds::sub::DataReader<BenchmarkMessageType>(dds::sub::Subscriber(participant),topicFrom);
 
-	while (listener.count() < sample_count || sample_count == 0)
-	{
-		//std::cout << "BenchmarkMessageType subscriber sleeping for 4 sec..." << std::endl;
+	// Create a DataWriter with default Qos (Publisher created in-line)
+	writer_ = new dds::pub::DataWriter<BenchmarkMessageType>(dds::pub::Publisher(participant), topicTo, dds::core::QosProvider::Default().datawriter_qos());
 
-		rti::util::sleep(dds::core::Duration(4));
-	}
-
-	// Unset the listener to allow the reader destruction
-	// (rti::core::ListenerBinder can do this automatically)
-	reader.listener(NULL, dds::core::status::StatusMask::none());
+	// DataReader status condition: to process the reception of samples
+	dds::core::cond::StatusCondition reader_status_condition(receiver_);
+	reader_status_condition.enabled_statuses(dds::core::status::StatusMask::data_available());
+	reader_status_condition->handler(DataAvailableHandler(*this));
+	rti::core::cond::AsyncWaitSet async_waitset(rti::core::cond::AsyncWaitSetProperty().thread_pool_size(thread_pool_size));
+	async_waitset_.attach_condition(reader_status_condition);
+	async_waitset.start();
 }
 
-int main(int argc, char *argv[])
+void BenchmarkType_forwarder::process_received_samples()
 {
+	// Take all samples This will reset the StatusCondition
+	dds::sub::LoanedSamples<BenchmarkMessageType> samples = receiver_.take();
 
-	int sample_count = 0; // infinite loop
-	std::string readFromTopic = "L1";
-	std::string writeToTopic = "L3";
-	if (argc >= 2) {
-		sample_count = atoi(argv[2]);
-	}
-	if (argc >= 3) {
-		readFromTopic = atoi(argv[3]);
-	}
-	if (argc >= 4) {
-		writeToTopic = atoi(argv[4]);
-	}
-//
-//	// To turn on additional logging, include <rti/config/Logger.hpp> and
-//	// uncomment the following line:
-//	// rti::config::Logger::instance().verbosity(rti::config::Verbosity::STATUS_ALL);
-//
-	try
+	// Release status condition in case other threads can process outstanding
+	// samples
+	async_waitset_.unlock_condition(dds::core::cond::StatusCondition(receiver_));
+
+	// Process sample
+	for (dds::sub::LoanedSamples<BenchmarkMessageType>::iterator sample_it = samples.begin(); sample_it != samples.end(); sample_it++)
 	{
-		subscriber_main(sample_count, readFromTopic, writeToTopic);
+		if (sample_it->info().valid())
+		{
+			writer_->write(sample_it->data());
+		}
 	}
-	catch (const std::exception& ex)
-	{
-		// This will catch DDS exceptions
-		std::cerr << "Exception in subscriber_main(): " << ex.what() << std::endl;
-		return -1;
-	}
-//
-//	// RTI Connext provides a finalize_participant_factory() method
-//	// if you want to release memory used by the participant factory singleton.
-//	// Uncomment the following line to release the singleton:
-//	//
-//	// dds::domain::DomainParticipant::finalize_participant_factory();
-//
-	return 0;
 }
-//
+BenchmarkType_forwarder::~BenchmarkType_forwarder()
+{
+	async_waitset_.detach_condition(dds::core::cond::StatusCondition(receiver_));
+}

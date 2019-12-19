@@ -15,14 +15,22 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="BenchmarkType_forwarder.cxx">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="BenchmarkType.cxx">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="BenchmarkTypePlugin.cxx">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="BenchmarkType_forwarder_main.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BenchmarkType_forwarder.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="BenchmarkType_forwarder.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

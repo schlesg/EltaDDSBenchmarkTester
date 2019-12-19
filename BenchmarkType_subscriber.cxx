@@ -1,111 +1,97 @@
-#include <algorithm>
-#include <iostream>
-
-#include <dds/sub/ddssub.hpp>
-#include <dds/core/ddscore.hpp>
-// Or simply include <dds/dds.hpp> 
-
+#include "BenchmarkType_subscriber.hpp"
+#include <functional>
+#include <chrono>
+#include <future>
+#include <cstdio>
 #include "BenchmarkType.hpp"
 
-class BenchmarkMessageTypeReaderListener : public dds::sub::NoOpDataReaderListener<BenchmarkMessageType> {
-public:
+const std::string BenchmarkTypeSubscriber::TOPIC_NAME = "L3";
 
-	BenchmarkMessageTypeReaderListener() : count_(0)
-	{
-	}
-
-	void on_data_available(dds::sub::DataReader<BenchmarkMessageType>& reader)
-	{
-		// Take all samples
-		dds::sub::LoanedSamples<BenchmarkMessageType> samples = reader.take();
-
-		for (dds::sub::LoanedSamples<BenchmarkMessageType>::iterator sample_it = samples.begin();
-			sample_it != samples.end(); sample_it++) {
-
-			if (sample_it->info().valid()) {
-				count_++;
-				//std::cout << sample_it->data() << std::endl;
-
-				std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
-				auto duration = now.time_since_epoch();
-				auto microseconds = std::chrono::duration_cast<std::chrono::microseconds>(duration);
-				std::cout << sample_it->data().seqNum() << " microsec diff = " <<
-					microseconds.count() - sample_it->data().sourceTimestampMicrosec() << std::endl;
-
-				//std::cout << sample_it->data().buffer().size() << std::endl;
-				
-			}
-		}
-	}
-
-	int count() const
-	{
-		return count_;
-	}
-
-private:
-	int count_;
-};
-
-void subscriber_main(int sample_count)
+BenchmarkTypeSubscriber::BenchmarkTypeSubscriber(DDS_DomainId_t domain_id, int thread_pool_size, int verbosity)
+	: receiver_(dds::core::null)
 {
 	// Create a DomainParticipant with default Qos
-	dds::domain::DomainParticipant participant(0);
+	dds::domain::DomainParticipant participant(domain_id);
 
 	// Create a Topic -- and automatically register the type
-	dds::topic::Topic<BenchmarkMessageType> topic(participant, "L3");
+	dds::topic::Topic<BenchmarkMessageType> topic(participant, TOPIC_NAME);
 
 	// Create a DataReader with default Qos (Subscriber created in-line)
-	BenchmarkMessageTypeReaderListener listener;
-	dds::sub::DataReader<BenchmarkMessageType> reader(
-		dds::sub::Subscriber(participant),
-		topic,
-		dds::core::QosProvider::Default().datareader_qos(),
-		&listener,
-		dds::core::status::StatusMask::data_available());
+	receiver_ = dds::sub::DataReader<BenchmarkMessageType>(dds::sub::Subscriber(participant), topic);
 
-	while (listener.count() < sample_count || sample_count == 0) 
-	{
-		//std::cout << "BenchmarkMessageType subscriber sleeping for 4 sec..." << std::endl;
+	// DataReader status condition: to process the reception of samples
+	dds::core::cond::StatusCondition reader_status_condition(receiver_);
+	reader_status_condition.enabled_statuses(dds::core::status::StatusMask::data_available());
+	reader_status_condition->handler(DataAvailableHandler(*this));
+	// Change insert to subscriber
+	rti::core::cond::AsyncWaitSet async_waitset(rti::core::cond::AsyncWaitSetProperty().thread_pool_size(thread_pool_size));
+	async_waitset_.attach_condition(reader_status_condition);
+	async_waitset.start();
 
-		rti::util::sleep(dds::core::Duration(4));
-	}
-
-	// Unset the listener to allow the reader destruction
-	// (rti::core::ListenerBinder can do this automatically)
-	reader.listener(NULL, dds::core::status::StatusMask::none());
+	totalDiff_ = 0;
+	verbosity_ = verbosity;
+	now_ = std::chrono::system_clock::now();
 }
 
-int main(int argc, char *argv[])
+void BenchmarkTypeSubscriber::printResult()
 {
-
-	int sample_count = 0; // infinite loop
-
-	if (argc >= 2) {
-		sample_count = atoi(argv[2]);
-	}
-
-	// To turn on additional logging, include <rti/config/Logger.hpp> and
-	// uncomment the following line:
-	// rti::config::Logger::instance().verbosity(rti::config::Verbosity::STATUS_ALL);
-
-	try
+	if (received_count() != 0)
 	{
-		subscriber_main(sample_count);
+		std::cout << "latency average microsec = " << (totalDiff_ / received_count());
+		std::cout << "  number of received messages = " << received_count();
+		std::cout << "  number of received messages per seconds = " << (received_count() / getSecFromStart());
+		std::cout << "  kilo bytes per seconds = " << (received_countBytes() / getSecFromStart());
 	}
-	catch (const std::exception& ex)
-	{
-		// This will catch DDS exceptions
-		std::cerr << "Exception in subscriber_main(): " << ex.what() << std::endl;
-		return -1;
-	}
-
-	// RTI Connext provides a finalize_participant_factory() method
-	// if you want to release memory used by the participant factory singleton.
-	// Uncomment the following line to release the singleton:
-	//
-	// dds::domain::DomainParticipant::finalize_participant_factory();
-
-	return 0;
 }
 
+void BenchmarkTypeSubscriber::process_received_samples()
+{
+	// Take all samples This will reset the StatusCondition
+	dds::sub::LoanedSamples<BenchmarkMessageType> samples = receiver_.take();
+
+	// Release status condition in case other threads can process outstanding
+	// samples
+	async_waitset_.unlock_condition(dds::core::cond::StatusCondition(receiver_));
+
+	// Process sample
+	for (dds::sub::LoanedSamples<BenchmarkMessageType>::iterator sample_it = samples.begin(); sample_it != samples.end(); sample_it++)
+	{
+		if (sample_it->info().valid())
+		{
+			std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
+			auto duration = now.time_since_epoch();
+			auto microseconds = std::chrono::duration_cast<std::chrono::microseconds>(duration);
+
+			if (verbosity_ == 1)
+			{
+				std::cout << sample_it->data().seqNum() << " microsec diff  = " <<
+					microseconds.count() - sample_it->data().sourceTimestampMicrosec() << std::endl;
+			}
+
+			totalDiff_ += (microseconds.count() - sample_it->data().sourceTimestampMicrosec());
+		}
+	}
+}
+
+int BenchmarkTypeSubscriber::received_count()
+{
+	return receiver_->datareader_protocol_status().received_sample_count().total();
+}
+
+
+double BenchmarkTypeSubscriber::received_countBytes()
+{
+	return receiver_->datareader_protocol_status().received_sample_bytes().total() / 1000;//K
+}
+
+double BenchmarkTypeSubscriber::getSecFromStart()
+{
+	std::chrono::time_point<std::chrono::system_clock> end = std::chrono::system_clock::now();
+	double diff = std::chrono::duration_cast<std::chrono::seconds>(end - now_).count();
+	return diff;
+}
+
+BenchmarkTypeSubscriber::~BenchmarkTypeSubscriber()
+{
+	async_waitset_.detach_condition(dds::core::cond::StatusCondition(receiver_));
+}
