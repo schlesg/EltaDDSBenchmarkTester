@@ -27,6 +27,9 @@
     <ClCompile Include="BenchmarkType_subscriber_main.cxx">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Timer.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BenchmarkType.hpp">
@@ -36,6 +39,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="BenchmarkType_subscriber.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Timer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

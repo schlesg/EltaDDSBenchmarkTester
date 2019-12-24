@@ -30,7 +30,17 @@ BenchmarkTypeSubscriber::BenchmarkTypeSubscriber(DDS_DomainId_t domain_id, int t
 
 	totalDiff_ = 0;
 	verbosity_ = verbosity;
-	now_ = std::chrono::system_clock::now();
+	now_ = std::chrono::system_clock::now();	
+}
+void BenchmarkTypeSubscriber::startTimer(int milli)
+{
+	timer_ = new Timer();
+	timer_->start(milli, std::bind(&BenchmarkTypeSubscriber::printResult, this));
+}
+void BenchmarkTypeSubscriber::stopTimer()
+{
+
+	timer_->stop();
 }
 
 void BenchmarkTypeSubscriber::printResult()

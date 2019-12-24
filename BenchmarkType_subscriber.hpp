@@ -2,6 +2,7 @@
 #include <dds/core/ddscore.hpp>
 #include <rti/core/cond/AsyncWaitSet.hpp>
 #include <atomic>
+#include "Timer.hpp"
 
 class BenchmarkMessageType;
 
@@ -16,6 +17,8 @@ public:
 	void printResult();
 	double getSecFromStart();
 	double received_countBytes();
+	void startTimer(int milli);
+	void stopTimer();
 	~BenchmarkTypeSubscriber();
 
 public:
@@ -23,11 +26,12 @@ public:
 	dds::sub::DataReader<BenchmarkMessageType> receiver_;
 	// Reference to the AWS used for processing the events
 	rti::core::cond::AsyncWaitSet async_waitset_;
-
+	
 private:
 	std::atomic<unsigned long long> totalDiff_;
 	std::atomic<int> verbosity_;
 	std::chrono::time_point<std::chrono::system_clock> now_;
+	Timer* timer_;
 };
 
 class DataAvailableHandler

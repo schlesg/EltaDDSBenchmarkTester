@@ -11,7 +11,7 @@ void printUsage()
 		"BenchmarkType_subscriber [options]\n"
 		"Options:\n"
 		"\t-d, -domainId: Domain ID (default 0)\n"
-		"\t-p, -printRate: Print results rate in seconds(default 1 seconds)\n"
+		"\t-p, -printRate: Print results rate in milliseconds(default 50 milliseconds)\n"
 		"\t-v, -verbosity: verbosity for print. (0) not print (1) print (default 0)\n"
 		"\t-t, -threads: Number of threads used to process sample (default 10)\n");
 
@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
 {
 	int domain_id = 0;
 	int thread_pool_size = 10;
-	int printRate = 1;
+	int printRate = 50;
 	int verbosity = 0;
 
 	for (int i = 0; i < argc; i++)
@@ -68,11 +68,11 @@ int main(int argc, char *argv[])
 	try
 	{
 		BenchmarkTypeSubscriber subscriber(domain_id, thread_pool_size, verbosity);
+		subscriber.startTimer(printRate);
 
 		while (true)
 		{
-			//rti::util::sleep(dds::core::Duration(printRate));
-			subscriber.printResult();		
+			//rti::util::sleep(dds::core::Duration(printRate));		
 		}
 	}
 	catch (const std::exception& ex)

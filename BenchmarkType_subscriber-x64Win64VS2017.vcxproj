@@ -289,11 +289,13 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="Timer.cxx" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BenchmarkType.hpp" />
     <ClInclude Include="BenchmarkTypePlugin.hpp" />
     <ClInclude Include="BenchmarkType_subscriber.hpp" />
+    <ClInclude Include="Timer.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="USER_QOS_PROFILES.xml" />
