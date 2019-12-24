@@ -2,7 +2,7 @@
 #include <iostream>
 #include <dds/sub/ddssub.hpp>
 #include <dds/core/ddscore.hpp>
-#include "BenchmarkType.hpp"
+#include <rti/core/cond/AsyncWaitSet.hpp>
 #include "BenchmarkType_forwarder.hpp"
 
 void printUsage()
@@ -15,11 +15,12 @@ void printUsage()
 		"\t-t, -threads: Number of threads used to process sample (default 10)\n"
 		"\t-d, -domainId: DomainID (default 0)\n");
 
+	std::cout << USAGE;	
 	srand(time(NULL));
 }
 
 
-int main(int argc, char *argv[])
+int main(int argc, char const *argv[])
 {
 	std::string readFromTopic = "L1";
 	std::string writeToTopic = "L2";

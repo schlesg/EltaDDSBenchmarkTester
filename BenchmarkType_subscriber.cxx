@@ -40,7 +40,7 @@ void BenchmarkTypeSubscriber::printResult()
 		std::cout << "latency average microsec = " << (totalDiff_ / received_count());
 		std::cout << "  number of received messages = " << received_count();
 		std::cout << "  number of received messages per seconds = " << (received_count() / getSecFromStart());
-		std::cout << "  kilo bytes per seconds = " << (received_countBytes() / getSecFromStart());
+		std::cout << "  kilo bytes per seconds = " << (received_countBytes() / getSecFromStart())<<std::endl;
 	}
 }
 

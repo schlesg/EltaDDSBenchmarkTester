@@ -1,9 +1,8 @@
 #include <iostream>
 #include <dds/pub/ddspub.hpp>
 #include <rti/util/util.hpp> // for sleep()
-#include "BenchmarkType.hpp"
 #include <dds/core/ddscore.hpp>
-
+#include "BenchmarkType.hpp"
 #include <chrono>
 #include <thread>
 
@@ -30,11 +29,11 @@ public:
 	}
 };
 
-void publisher_main(int buffer_count, int pubRate, int verbosity)
+void publisher_main(int buffer_count, int pubRate, int verbosity, int domain_id)
 {
 #pragma region Init DDS
 	// Create a DomainParticipant with default Qos
-	dds::domain::DomainParticipant participant(0);
+	dds::domain::DomainParticipant participant(domain_id);
 
 	// Create a Topic -- and automatically register the type
 	dds::topic::Topic<BenchmarkMessageType> topic(participant, "L1");
@@ -84,11 +83,12 @@ void printUsage()
 		"\t-d, -domainId: Domain ID (default 0)\n"
 		"\t-b, -bufferCount: Size of buffer message to send (default 0)\n"
 		"\t-r, -rate: Publisher massage rate ""exiting (default 100)\n");
+	std::cout << USAGE;
 
 	srand(time(NULL));
 }
 
-int main(int argc, char *argv[])
+int main(int argc, char const *argv[])
 {
 	int buffer_count = 0;
 	int verbosity = 0;
@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
 
 	try
 	{
-		publisher_main(buffer_count, pubRate, verbosity);
+		publisher_main(buffer_count, pubRate, verbosity, domain_id);
 	}
 	catch (const std::exception& ex)
 	{

@@ -1,7 +1,8 @@
 #include <dds/sub/ddssub.hpp>
 #include <dds/core/ddscore.hpp>
 #include <rti/core/cond/AsyncWaitSet.hpp>
-#include "BenchmarkType.hpp"
+
+class BenchmarkMessageType;
 
 class BenchmarkType_forwarder
 {

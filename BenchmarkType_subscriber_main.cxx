@@ -15,6 +15,7 @@ void printUsage()
 		"\t-v, -verbosity: verbosity for print. (0) not print (1) print (default 0)\n"
 		"\t-t, -threads: Number of threads used to process sample (default 10)\n");
 
+	std::cout << USAGE;
 	srand(time(NULL));
 }
 
@@ -24,8 +25,6 @@ int main(int argc, char *argv[])
 	int thread_pool_size = 10;
 	int printRate = 1;
 	int verbosity = 0;
-
-	printUsage();
 
 	for (int i = 0; i < argc; i++)
 	{
