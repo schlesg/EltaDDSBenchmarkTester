@@ -22,9 +22,9 @@ BenchmarkType_forwarder::BenchmarkType_forwarder(DDS_DomainId_t domain_id, int t
 	dds::core::cond::StatusCondition reader_status_condition(receiver_);
 	reader_status_condition.enabled_statuses(dds::core::status::StatusMask::data_available());
 	reader_status_condition->handler(DataAvailableHandler(*this));
-	rti::core::cond::AsyncWaitSet async_waitset(rti::core::cond::AsyncWaitSetProperty().thread_pool_size(thread_pool_size));
+	async_waitset_ = rti::core::cond::AsyncWaitSet (rti::core::cond::AsyncWaitSetProperty().thread_pool_size(thread_pool_size));
 	async_waitset_.attach_condition(reader_status_condition);
-	async_waitset.start();
+	async_waitset_.start();
 }
 
 void BenchmarkType_forwarder::process_received_samples()
@@ -35,7 +35,7 @@ void BenchmarkType_forwarder::process_received_samples()
 	// Release status condition in case other threads can process outstanding
 	// samples
 	async_waitset_.unlock_condition(dds::core::cond::StatusCondition(receiver_));
-
+	
 	// Process sample
 	for (dds::sub::LoanedSamples<BenchmarkMessageType>::iterator sample_it = samples.begin(); sample_it != samples.end(); sample_it++)
 	{
