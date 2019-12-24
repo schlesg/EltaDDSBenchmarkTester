@@ -1,5 +1,6 @@
 #include <dds/pub/ddspub.hpp>
 #include "BenchmarkType_forwarder.hpp"
+#include "BenchmarkType.hpp"
 
 BenchmarkType_forwarder::BenchmarkType_forwarder(DDS_DomainId_t domain_id, int thread_pool_size, std::string readFromTopic, std::string writeToTopic)
 	: receiver_(dds::core::null)
