@@ -19,6 +19,7 @@ public:
 	double received_countBytes();
 	void startTimer(int milli);
 	void stopTimer();
+	double calcSTD();
 	~BenchmarkTypeSubscriber();
 
 public:

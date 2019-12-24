@@ -81,8 +81,8 @@ void printUsage()
 		"BenchmarkType_publisher [options]\n"
 		"Options:\n"
 		"\t-d, -domainId: Domain ID (default 0)\n"
-		"\t-b, -bufferCount: Size of buffer message to send (default 0)\n"
-		"\t-r, -rate: Publisher massage rate ""exiting (default 100)\n");
+		"\t-b, -bufferLength: Size of buffer message to send (default 1000)\n"
+		"\t-r, -rate: Publisher massage rate "" (default 10)\n");
 	std::cout << USAGE;
 
 	srand(time(NULL));
@@ -90,7 +90,7 @@ void printUsage()
 
 int main(int argc, char const *argv[])
 {
-	int buffer_count = 0;
+	int bufferLength = 1000;
 	int verbosity = 0;
 	int pubRate = 10;
 	int domain_id = 0;
@@ -105,11 +105,11 @@ int main(int argc, char const *argv[])
 			}
 		}
 
-		else if (strcmp(argv[i], "-b") == 0 || strcmp(argv[i], "-bufferCount") == 0)
+		else if (strcmp(argv[i], "-b") == 0 || strcmp(argv[i], "-bufferLength") == 0)
 		{
 			if (i != argc - 1)
 			{
-				buffer_count = atoi(argv[++i]);
+				bufferLength = atoi(argv[++i]);
 			}
 		}
 		else if (strcmp(argv[i], "-r") == 0 || strcmp(argv[i], "-rate") == 0)
@@ -128,7 +128,7 @@ int main(int argc, char const *argv[])
 
 	try
 	{
-		publisher_main(buffer_count, pubRate, verbosity, domain_id);
+		publisher_main(bufferLength, pubRate, verbosity, domain_id);
 	}
 	catch (const std::exception& ex)
 	{

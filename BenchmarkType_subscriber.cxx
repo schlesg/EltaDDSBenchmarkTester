@@ -3,6 +3,7 @@
 #include <chrono>
 #include <future>
 #include <cstdio>
+#include <cmath>
 #include "BenchmarkType.hpp"
 
 const std::string BenchmarkTypeSubscriber::TOPIC_NAME = "L3";
@@ -39,8 +40,14 @@ void BenchmarkTypeSubscriber::startTimer(int milli)
 }
 void BenchmarkTypeSubscriber::stopTimer()
 {
-
 	timer_->stop();
+}
+double BenchmarkTypeSubscriber::calcSTD()
+{
+	//double d = 1.0;
+	//double length = received_count();
+	//return sqrt((totalSquDiff_ -(totalDiff_ * totalDiff_) / length) *(d / (length - 1)));
+	return 0;
 }
 
 void BenchmarkTypeSubscriber::printResult()
@@ -48,6 +55,7 @@ void BenchmarkTypeSubscriber::printResult()
 	if (received_count() != 0)
 	{
 		std::cout << "latency average microsec = " << (totalDiff_ / received_count());
+		std::cout << " STD = " << calcSTD();
 		std::cout << "  number of received messages = " << received_count();
 		std::cout << "  number of received messages per seconds = " << (received_count() / getSecFromStart());
 		std::cout << "  kilo bytes per seconds = " << (received_countBytes() / getSecFromStart())<<std::endl;
