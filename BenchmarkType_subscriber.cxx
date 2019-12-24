@@ -24,9 +24,9 @@ BenchmarkTypeSubscriber::BenchmarkTypeSubscriber(DDS_DomainId_t domain_id, int t
 	reader_status_condition.enabled_statuses(dds::core::status::StatusMask::data_available());
 	reader_status_condition->handler(DataAvailableHandler(*this));
 	// Change insert to subscriber
-	rti::core::cond::AsyncWaitSet async_waitset(rti::core::cond::AsyncWaitSetProperty().thread_pool_size(thread_pool_size));
+	async_waitset_ = rti::core::cond::AsyncWaitSet(rti::core::cond::AsyncWaitSetProperty().thread_pool_size(thread_pool_size));
 	async_waitset_.attach_condition(reader_status_condition);
-	async_waitset.start();
+	async_waitset_.start();
 
 	totalDiff_ = 0;
 	verbosity_ = verbosity;

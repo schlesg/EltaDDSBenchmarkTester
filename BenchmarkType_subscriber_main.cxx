@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
 
 		while (true)
 		{
-			rti::util::sleep(dds::core::Duration(printRate));
+			//rti::util::sleep(dds::core::Duration(printRate));
 			subscriber.printResult();		
 		}
 	}

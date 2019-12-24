@@ -69,7 +69,7 @@ int main(int argc, char const *argv[])
 
 		while (true)
 		{
-			rti::util::sleep(dds::core::Duration(1));
+			//rti::util::sleep(dds::core::Duration(1));
 		}
 	}
 	catch (const std::exception& ex)
