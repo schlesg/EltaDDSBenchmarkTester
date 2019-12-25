@@ -12,7 +12,8 @@ void printUsage()
 		"Options:\n"
 		"\t-c, -configurationTopic: (1) for write to topic L2 read from topic L1. (2) for write to topic L3 read from topic L2.(default 1) \n"
 		"\t-w, -writeToTopic: Topic name to write to (default L2) \n"
-		"\t-t, -threads: Number of threads used to process sample (default 10)\n"
+		"\t-v, -verbosity: Print verbosity (0) without print (1) print (default 0)\n"
+		"\t-t, -threads: Number of threads used to process sample (default 1)\n"
 		"\t-d, -domainId: DomainID (default 0)\n");
 
 	std::cout << USAGE;	
@@ -25,7 +26,8 @@ int main(int argc, char const *argv[])
 	std::string readFromTopic = "L1";
 	std::string writeToTopic = "L2";
 	int domain_id = 0;
-	int thread_pool_size = 10;
+	int verbosity = 0;
+	int thread_pool_size = 1;
 
 	for (int i = 0; i < argc; i++)
 	{
@@ -34,6 +36,14 @@ int main(int argc, char const *argv[])
 			if (i != argc - 1)
 			{
 				domain_id = atoi(argv[++i]);
+			}
+		}
+
+		if (strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "-verbosity") == 0)
+		{
+			if (i != argc - 1)
+			{
+				verbosity = atoi(argv[++i]);
 			}
 		}
 
@@ -65,7 +75,7 @@ int main(int argc, char const *argv[])
 
 	try
 	{
-		BenchmarkType_forwarder forearder(domain_id, thread_pool_size, readFromTopic, writeToTopic);
+		BenchmarkType_forwarder forearder(domain_id, thread_pool_size, readFromTopic, writeToTopic, verbosity);
 
 		while (true)
 		{

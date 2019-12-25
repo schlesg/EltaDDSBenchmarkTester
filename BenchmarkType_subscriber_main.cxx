@@ -11,9 +11,9 @@ void printUsage()
 		"BenchmarkType_subscriber [options]\n"
 		"Options:\n"
 		"\t-d, -domainId: Domain ID (default 0)\n"
-		"\t-p, -printRate: Print results rate in milliseconds(default 10000 milliseconds)\n"
+		"\t-p, -printRate: Print results rate in milliseconds(default 10000 milliseconds - 10 sec)\n"
 		"\t-v, -verbosity: verbosity for print. (0) not print (1) print (default 0)\n"
-		"\t-t, -threads: Number of threads used to process sample (default 10)\n");
+		"\t-t, -threads: Number of threads used to process sample (default 1)\n");
 
 	std::cout << USAGE;
 	srand(time(NULL));
@@ -22,7 +22,7 @@ void printUsage()
 int main(int argc, char *argv[])
 {
 	int domain_id = 0;
-	int thread_pool_size = 10;
+	int thread_pool_size = 1;
 	int printRate = 10000;
 	int verbosity = 0;
 

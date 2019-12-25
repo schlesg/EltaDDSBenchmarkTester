@@ -2,9 +2,9 @@
 #include <dds/core/ddscore.hpp>
 #include <rti/core/cond/AsyncWaitSet.hpp>
 #include <atomic>
-#include "Timer.hpp"
 
 class BenchmarkMessageType;
+class Timer;
 
 class BenchmarkTypeSubscriber
 {
@@ -13,7 +13,7 @@ public:
 
 	BenchmarkTypeSubscriber(DDS_DomainId_t domain_id, int thread_pool_size, int verbosity);
 	void process_received_samples();
-	int received_count();
+	double received_count();
 	void printResult();
 	double getSecFromStart();
 	double received_countBytes();

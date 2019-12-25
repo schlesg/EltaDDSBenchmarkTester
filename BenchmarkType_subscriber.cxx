@@ -5,11 +5,12 @@
 #include <cstdio>
 #include <cmath>
 #include "BenchmarkType.hpp"
+#include "Timer.hpp"
 
 const std::string BenchmarkTypeSubscriber::TOPIC_NAME = "L3";
 
 BenchmarkTypeSubscriber::BenchmarkTypeSubscriber(DDS_DomainId_t domain_id, int thread_pool_size, int verbosity)
-	: receiver_(dds::core::null)
+	: receiver_(dds::core::null), verbosity_(verbosity), totalDiff_(0), now_(std::chrono::system_clock::now())
 {
 	// Create a DomainParticipant with default Qos
 	dds::domain::DomainParticipant participant(domain_id);
@@ -28,10 +29,6 @@ BenchmarkTypeSubscriber::BenchmarkTypeSubscriber(DDS_DomainId_t domain_id, int t
 	async_waitset_ = rti::core::cond::AsyncWaitSet(rti::core::cond::AsyncWaitSetProperty().thread_pool_size(thread_pool_size));
 	async_waitset_.attach_condition(reader_status_condition);
 	async_waitset_.start();
-
-	totalDiff_ = 0;
-	verbosity_ = verbosity;
-	now_ = std::chrono::system_clock::now();	
 }
 void BenchmarkTypeSubscriber::startTimer(int milli)
 {
@@ -54,11 +51,11 @@ void BenchmarkTypeSubscriber::printResult()
 {
 	if (received_count() != 0)
 	{
-		std::cout << "latency average microsec = " << (totalDiff_ / received_count());
+		std::cout << "latency(usec) = " << (totalDiff_ / received_count());
 		std::cout << " STD = " << calcSTD();
-		std::cout << "  number of received messages = " << received_count();
-		std::cout << "  number of received messages per seconds = " << (received_count() / getSecFromStart());
-		std::cout << "  kilo bytes per seconds = " << (received_countBytes() / getSecFromStart())<<std::endl;
+		//std::cout << "  number of received messages = " << received_count();
+		std::cout << "  msg/sec = " << (received_count() / getSecFromStart());
+		std::cout << "  kb/sec = " << (received_countBytes() / getSecFromStart())<<std::endl;
 	}
 }
 
@@ -91,7 +88,7 @@ void BenchmarkTypeSubscriber::process_received_samples()
 	}
 }
 
-int BenchmarkTypeSubscriber::received_count()
+double BenchmarkTypeSubscriber::received_count()
 {
 	return receiver_->datareader_protocol_status().received_sample_count().total();
 }
