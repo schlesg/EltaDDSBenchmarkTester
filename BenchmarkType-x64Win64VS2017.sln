@@ -14,8 +14,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BenchmarkType_forwarder", "
 		{BF900500-D48B-438B-827F-01512AC24AB1} = {BF900500-D48B-438B-827F-01512AC24AB1}
 	EndProjectSection
 EndProject
-Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "BenchmarkExecuter", "BenchmarkExecuter\BenchmarkExecuter.pyproj", "{BC772EC4-E3FB-4F15-970B-B8C51CEAE176}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -34,8 +32,6 @@ Global
 		{31D683CA-8617-458B-9351-F3D23C782EBE}.Debug|x64.Build.0 = Debug|x64
 		{31D683CA-8617-458B-9351-F3D23C782EBE}.Release|x64.ActiveCfg = Release|x64
 		{31D683CA-8617-458B-9351-F3D23C782EBE}.Release|x64.Build.0 = Release|x64
-		{BC772EC4-E3FB-4F15-970B-B8C51CEAE176}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{BC772EC4-E3FB-4F15-970B-B8C51CEAE176}.Release|x64.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
