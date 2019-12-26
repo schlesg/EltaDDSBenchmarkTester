@@ -29,7 +29,7 @@ public:
 	}
 };
 
-void publisher_main(int buffer_count, int pubRate, int verbosity, int domain_id)
+void publisher_main(int bufferSize, int pubRate, int verbosity, int domain_id)
 {
 #pragma region Init DDS
 	// Create a DomainParticipant with default Qos
@@ -44,7 +44,7 @@ void publisher_main(int buffer_count, int pubRate, int verbosity, int domain_id)
 	dds::pub::DataWriter<BenchmarkMessageType> writer(dds::pub::Publisher(participant), topic, dds::core::QosProvider::Default().datawriter_qos(), &listener);
 
 	BenchmarkMessageType sample;
-
+	std::cout << "Publisher initialized with PubRate - " << pubRate<< "Hz ; bufferSize - " << bufferSize << " Bytes" << std::endl;
 	while (!listener.isMatch())
 	{
 		std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -52,9 +52,9 @@ void publisher_main(int buffer_count, int pubRate, int verbosity, int domain_id)
 #pragma endregion
 
 	// resize the sample buffer
-	sample.buffer().resize(buffer_count);
+	sample.buffer().resize(bufferSize);
 
-	std::cout << "Starting to write BenchmarkMessageType  " << std::endl;
+	std::cout << "Starting to write... " << std::endl;
 
 	double timeTosleepSec = 1.0 / pubRate;
 
@@ -68,7 +68,7 @@ void publisher_main(int buffer_count, int pubRate, int verbosity, int domain_id)
 		sample.sourceTimestampMicrosec() = microseconds.count();
 
 
-		if (verbosity == 0)
+		if (verbosity == 1)
 			std::cout << "Writing BenchmarkMessageType, count " << count << std::endl;
 
 		writer.write(sample);
@@ -97,7 +97,7 @@ void printUsage()
 
 int main(int argc, char const *argv[])
 {
-	int bufferLength = 1000;
+	int bufferSize = 10000;
 	int verbosity = 0;
 	int pubRate = 100;
 	int domain_id = 0;
@@ -124,7 +124,7 @@ int main(int argc, char const *argv[])
 		{
 			if (i != argc - 1)
 			{
-				bufferLength = atoi(argv[++i]);
+				bufferSize = atoi(argv[++i]);
 			}
 		}
 		else if (strcmp(argv[i], "-r") == 0 || strcmp(argv[i], "-rate") == 0)
@@ -143,7 +143,7 @@ int main(int argc, char const *argv[])
 
 	try
 	{
-		publisher_main(bufferLength, pubRate, verbosity, domain_id);
+		publisher_main(bufferSize, pubRate, verbosity, domain_id);
 	}
 	catch (const std::exception& ex)
 	{

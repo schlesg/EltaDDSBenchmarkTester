@@ -9,7 +9,7 @@ class Timer;
 class BenchmarkType_forwarder
 {
 public:
-	BenchmarkType_forwarder(DDS_DomainId_t domain_id, int thread_pool_size, std::string readFromTopic, std::string writeToTopic, int verbosity);
+	BenchmarkType_forwarder(DDS_DomainId_t domain_id, int thread_pool_size, std::string readFromTopic, std::string writeToTopic, int verbosity, int forwardersDepth);
 	void process_received_samples();
 	double received_count();
 	void printResult();
@@ -27,6 +27,9 @@ private:
 	std::atomic<int> verbosity_;
 	std::atomic<unsigned long long> totalDiff_;
 	std::chrono::time_point<std::chrono::system_clock> now_;
+	int forwardersDepth_;
+	std::atomic<u_long> receivedMessageCount_ = 0;
+	
 	Timer* timer_;
 };
 

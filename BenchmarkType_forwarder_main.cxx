@@ -11,12 +11,11 @@ void printUsage()
 		"BenchmarkType_publisher [options]\n"
 		"Options:\n"
 		"\t-c, -configurationTopic: (1) for write to topic L2 read from topic L1. (2) for write to topic L3 read from topic L2.(default 1) \n"
-		"\t-w, -writeToTopic: Topic name to write to (default L2) \n"
 		"\t-v, -verbosity: Print verbosity (0) without print (1) print (default 0)\n"
 		"\t-t, -threads: Number of threads used to process sample (default 1)\n"
 		"\t-d, -domainId: DomainID (default 0)\n");
 
-	std::cout << USAGE;	
+	std::cout << USAGE;
 	srand(time(NULL));
 }
 
@@ -28,6 +27,7 @@ int main(int argc, char const *argv[])
 	int domain_id = 0;
 	int verbosity = 0;
 	int thread_pool_size = 1;
+	int forwardersDepth = 1;
 
 	for (int i = 0; i < argc; i++)
 	{
@@ -59,6 +59,15 @@ int main(int argc, char const *argv[])
 
 			}
 		}
+
+		if (strcmp(argv[i], "-f") == 0 || strcmp(argv[i], "-forwardersDepth") == 0)
+		{
+			if (i != argc - 1)
+			{
+				forwardersDepth = atoi(argv[++i]);
+			}
+		}
+
 		else if (strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "-threads") == 0)
 		{
 			if (i != argc - 1)
@@ -75,7 +84,8 @@ int main(int argc, char const *argv[])
 
 	try
 	{
-		BenchmarkType_forwarder forearder(domain_id, thread_pool_size, readFromTopic, writeToTopic, verbosity);
+		BenchmarkType_forwarder forwarder(domain_id, thread_pool_size, readFromTopic, writeToTopic, verbosity, forwardersDepth);
+		std::cout << "Forwarder initialized (" << readFromTopic << "-->" << writeToTopic << ") (#" << forwardersDepth << ")" << std::endl;
 
 		while (true)
 		{

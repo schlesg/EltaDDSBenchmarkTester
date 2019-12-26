@@ -3,8 +3,8 @@
 #include "BenchmarkType.hpp"
 #include "Timer.hpp"
 
-BenchmarkType_forwarder::BenchmarkType_forwarder(DDS_DomainId_t domain_id, int thread_pool_size, std::string readFromTopic, std::string writeToTopic, int verbosity)
-	: receiver_(dds::core::null), verbosity_(verbosity), totalDiff_(0), now_(std::chrono::system_clock::now())
+BenchmarkType_forwarder::BenchmarkType_forwarder(DDS_DomainId_t domain_id, int thread_pool_size, std::string readFromTopic, std::string writeToTopic, int verbosity, int forwardersDepth)
+	: receiver_(dds::core::null), verbosity_(verbosity), totalDiff_(0), now_(std::chrono::system_clock::now()), forwardersDepth_(forwardersDepth)
 {
 	// Create a DomainParticipant with default Qos
 	dds::domain::DomainParticipant participant(domain_id);
@@ -14,7 +14,7 @@ BenchmarkType_forwarder::BenchmarkType_forwarder(DDS_DomainId_t domain_id, int t
 	dds::topic::Topic<BenchmarkMessageType> topicTo(participant, writeToTopic);
 
 	// Create a DataReader with default Qos (Subscriber created in-line)
-	receiver_ = dds::sub::DataReader<BenchmarkMessageType>(dds::sub::Subscriber(participant),topicFrom);
+	receiver_ = dds::sub::DataReader<BenchmarkMessageType>(dds::sub::Subscriber(participant), topicFrom);
 
 	// Create a DataWriter with default Qos (Publisher created in-line)
 	writer_ = new dds::pub::DataWriter<BenchmarkMessageType>(dds::pub::Publisher(participant), topicTo, dds::core::QosProvider::Default().datawriter_qos());
@@ -23,7 +23,7 @@ BenchmarkType_forwarder::BenchmarkType_forwarder(DDS_DomainId_t domain_id, int t
 	dds::core::cond::StatusCondition reader_status_condition(receiver_);
 	reader_status_condition.enabled_statuses(dds::core::status::StatusMask::data_available());
 	reader_status_condition->handler(DataAvailableHandler(*this));
-	async_waitset_ = rti::core::cond::AsyncWaitSet (rti::core::cond::AsyncWaitSetProperty().thread_pool_size(thread_pool_size));
+	async_waitset_ = rti::core::cond::AsyncWaitSet(rti::core::cond::AsyncWaitSetProperty().thread_pool_size(thread_pool_size));
 	async_waitset_.attach_condition(reader_status_condition);
 	async_waitset_.start();
 
@@ -43,13 +43,18 @@ void BenchmarkType_forwarder::process_received_samples()
 	// Release status condition in case other threads can process outstanding
 	// samples
 	async_waitset_.unlock_condition(dds::core::cond::StatusCondition(receiver_));
-	
+
 	// Process sample
 	for (dds::sub::LoanedSamples<BenchmarkMessageType>::iterator sample_it = samples.begin(); sample_it != samples.end(); sample_it++)
 	{
 		if (sample_it->info().valid())
 		{
-			writer_->write(sample_it->data());
+			receivedMessageCount_ += 1;
+			//TODO not fully thread safe
+			//Only write a message each number of forwarders
+			if ((receivedMessageCount_ % this->forwardersDepth_) == 0) {
+				writer_->write(sample_it->data());
+			}
 		}
 	}
 }

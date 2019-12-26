@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
 {
 	int domain_id = 0;
 	int thread_pool_size = 1;
-	int printRate = 10000;
+	int printInterval = 10000;
 	int verbosity = 0;
 
 	for (int i = 0; i < argc; i++)
@@ -43,11 +43,11 @@ int main(int argc, char *argv[])
 				thread_pool_size = atoi(argv[++i]);
 			}
 		}
-		else if (strcmp(argv[i], "-p") == 0 || strcmp(argv[i], "-printRate") == 0)
+		else if (strcmp(argv[i], "-p") == 0 || strcmp(argv[i], "-printInterval") == 0)
 		{
 			if (i != argc - 1)
 			{
-				printRate = atoi(argv[++i]);
+				printInterval = atoi(argv[++i]);
 			}
 		}
 
@@ -68,7 +68,8 @@ int main(int argc, char *argv[])
 	try
 	{
 		BenchmarkTypeSubscriber subscriber(domain_id, thread_pool_size, verbosity);
-		subscriber.startTimer(printRate);
+		std::cout << "Subscriber initialized with (printInterval - " << printInterval/1000 << " sec)" << std::endl;
+		subscriber.startTimer(printInterval);
 
 		while (true)
 		{
