@@ -24,7 +24,7 @@
     <ClCompile Include="BenchmarkType.cxx">
       <Filter>Source Files</Filter>
     </ClCompile>
-  </ItemGroup>    
+  </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BenchmarkType.hpp">
       <Filter>Header Files</Filter>
@@ -32,10 +32,15 @@
     <ClInclude Include="BenchmarkTypePlugin.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-  </ItemGroup>  
+  </ItemGroup>
   <ItemGroup>
     <None Include="USER_QOS_PROFILES.xml">
       <Filter>Resource Files</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="BenchmarkType.idl">
+      <Filter>Resource Files</Filter>
+    </Midl>
   </ItemGroup>
 </Project>

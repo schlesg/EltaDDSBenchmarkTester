@@ -111,7 +111,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OutputFile>.\objs\x64Win64VS2017\BenchmarkType_forwarder.exe</OutputFile>
-      <AdditionalDependencies>nddscpp2zd.lib;nddsczd.lib;nddscorezd.lib;netapi32.lib;advapi32.lib;user32.lib;WS2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>nddsmetpzd.lib;nddscpp2zd.lib;nddsczd.lib;nddscorezd.lib;netapi32.lib;advapi32.lib;user32.lib;WS2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(NDDSHOME)\lib\x64Win64VS2017;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libcmtd;libcmt</IgnoreSpecificDefaultLibraries>
       <ProgramDatabaseFile>.\objs\x64Win64VS2017\BenchmarkType_forwarder.pdb</ProgramDatabaseFile>
@@ -175,6 +175,7 @@
       <ObjectFileName>.\objs\x64Win64VS2017\</ObjectFileName>
       <ProgramDataBaseFileName>.\objs\x64Win64VS2017\</ProgramDataBaseFileName>
       <PrecompiledHeaderOutputFile />
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -185,7 +186,7 @@
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <OutputFile>.\objs\x64Win64VS2017\BenchmarkType_forwarder.exe</OutputFile>
       <AdditionalLibraryDirectories>$(NDDSHOME)\lib\x64Win64VS2017;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>nddscpp2z.lib;nddscz.lib;nddscorez.lib; netapi32.lib;advapi32.lib;user32.lib;WS2_32.lib;;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>nddsmetpz.lib;nddscpp2z.lib;nddscz.lib;nddscorez.lib; netapi32.lib;advapi32.lib;user32.lib;WS2_32.lib;;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>libcmtd;libcmt</IgnoreSpecificDefaultLibraries>
       <ProgramDatabaseFile>.\objs\x64Win64VS2017\BenchmarkType_forwarder.pdb</ProgramDatabaseFile>
     </Link>
@@ -201,6 +202,8 @@
     <ClCompile Include="Timer.cxx" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BenchmarkType.hpp" />
+    <ClInclude Include="BenchmarkTypePlugin.hpp" />
     <ClInclude Include="BenchmarkType_forwarder.hpp" />
     <ClInclude Include="Timer.hpp" />
   </ItemGroup>

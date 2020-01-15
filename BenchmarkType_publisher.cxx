@@ -5,6 +5,10 @@
 #include "BenchmarkType.hpp"
 #include <chrono>
 #include <thread> 
+#include <rti/zcopy/pub/ZcopyDataWriter.hpp>
+#include <rti/zcopy/sub/ZcopyDataReader.hpp>
+
+
 
 class BenchmarkMessageTypeWriterListener : public dds::pub::NoOpDataWriterListener<BenchmarkMessageType>
 {
@@ -43,7 +47,7 @@ void publisher_main(int bufferSize, int pubRate, int verbosity, int domain_id)
 	// Create a DataWriter with default Qos (Publisher created in-line)
 	dds::pub::DataWriter<BenchmarkMessageType> writer(dds::pub::Publisher(participant), topic, dds::core::QosProvider::Default().datawriter_qos(), &listener);
 
-	BenchmarkMessageType sample;
+	//BenchmarkMessageType sample;
 	std::cout << "Publisher initialized with PubRate - " << pubRate<< "Hz ; bufferSize - " << bufferSize << " Bytes" << std::endl;
 	while (!listener.isMatch())
 	{
@@ -52,7 +56,7 @@ void publisher_main(int bufferSize, int pubRate, int verbosity, int domain_id)
 #pragma endregion
 
 	// resize the sample buffer
-	sample.buffer().resize(bufferSize);
+	//sample.buffer().resize(bufferSize);
 
 	std::cout << "Starting to write... " << std::endl;
 
@@ -60,18 +64,19 @@ void publisher_main(int bufferSize, int pubRate, int verbosity, int domain_id)
 
 	for (int count = 0; true; count++)
 	{
-		sample.seqNum() = count;
+		auto sample = writer.extensions().get_loan();
+		sample->root().seqNum(count);
 
 		std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
 		auto duration = now.time_since_epoch();
 		auto microseconds = std::chrono::duration_cast<std::chrono::microseconds>(duration);
-		sample.sourceTimestampMicrosec() = microseconds.count();
+		sample->root().sourceTimestampMicrosec(microseconds.count());
 
 
 		if (verbosity == 1)
 			std::cout << "Writing BenchmarkMessageType, count " << count << std::endl;
 
-		writer.write(sample);
+		writer.write(*sample);
 
 		constexpr std::chrono::duration<double> MinSleepDuration(0);
 		std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();

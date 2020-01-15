@@ -19,10 +19,10 @@ BenchmarkTypeSubscriber::BenchmarkTypeSubscriber(DDS_DomainId_t domain_id, int t
 	dds::topic::Topic<BenchmarkMessageType> topic(participant, TOPIC_NAME);
 
 	// Create a DataReader with default Qos (Subscriber created in-line)
-	receiver_ = dds::sub::DataReader<BenchmarkMessageType>(dds::sub::Subscriber(participant), topic);
+	receiver_ = std::make_shared < dds::sub::DataReader<BenchmarkMessageType>>(dds::sub::Subscriber(participant), topic, dds::core::QosProvider::Default().datareader_qos());
 
 	// DataReader status condition: to process the reception of samples
-	dds::core::cond::StatusCondition reader_status_condition(receiver_);
+	dds::core::cond::StatusCondition reader_status_condition(*receiver_);
 	reader_status_condition.enabled_statuses(dds::core::status::StatusMask::data_available());
 	reader_status_condition->handler(DataAvailableHandler(*this));
 	// Change insert to subscriber
@@ -55,23 +55,22 @@ void BenchmarkTypeSubscriber::printResult()
 		std::cout << " STD = " << calcSTD();
 		//std::cout << "  number of received messages = " << received_count();
 		std::cout << "  msg/sec = " << (received_count() / getSecFromStart());
-		std::cout << "  kb/sec = " << (received_countBytes() / getSecFromStart())<<std::endl;
+		std::cout << "  kb/sec = " << (received_countBytes() / getSecFromStart()) << std::endl;
 	}
 }
 
 void BenchmarkTypeSubscriber::process_received_samples()
 {
 	// Take all samples This will reset the StatusCondition
-	dds::sub::LoanedSamples<BenchmarkMessageType> samples = receiver_.take();
+	auto samples = receiver_->take();
 
 	// Release status condition in case other threads can process outstanding
 	// samples
-	async_waitset_.unlock_condition(dds::core::cond::StatusCondition(receiver_));
+	async_waitset_.unlock_condition(dds::core::cond::StatusCondition(*receiver_));
 
 	// Process sample
-	for (dds::sub::LoanedSamples<BenchmarkMessageType>::iterator sample_it = samples.begin(); sample_it != samples.end(); sample_it++)
-	{
-		if (sample_it->info().valid())
+	for (auto& sample : samples) {
+		if (sample->info().valid())
 		{
 			std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
 			auto duration = now.time_since_epoch();
@@ -79,24 +78,25 @@ void BenchmarkTypeSubscriber::process_received_samples()
 
 			if (verbosity_ == 1)
 			{
-				std::cout << sample_it->data().seqNum() << " microsec diff  = " <<
-					microseconds.count() - sample_it->data().sourceTimestampMicrosec() << std::endl;
+				std::cout << sample.data().root().seqNum() << " microsec diff  = " <<
+					microseconds.count() - sample->data().root().sourceTimestampMicrosec() << std::endl;
+				std::cout << "received size" << sample->data().root().get_buffer_size() << std::endl;
 			}
 
-			totalDiff_ += (microseconds.count() - sample_it->data().sourceTimestampMicrosec());
+			totalDiff_ += (microseconds.count() - sample->data().root().sourceTimestampMicrosec());
 		}
 	}
 }
 
 double BenchmarkTypeSubscriber::received_count()
 {
-	return receiver_->datareader_protocol_status().received_sample_count().total();
+	return (*receiver_)->datareader_protocol_status().received_sample_count().total();
 }
 
 
 double BenchmarkTypeSubscriber::received_countBytes()
 {
-	return receiver_->datareader_protocol_status().received_sample_bytes().total() / 1000;//K
+	return (*receiver_)->datareader_protocol_status().received_sample_bytes().total() / 1000;//K
 }
 
 double BenchmarkTypeSubscriber::getSecFromStart()
@@ -108,5 +108,5 @@ double BenchmarkTypeSubscriber::getSecFromStart()
 
 BenchmarkTypeSubscriber::~BenchmarkTypeSubscriber()
 {
-	async_waitset_.detach_condition(dds::core::cond::StatusCondition(receiver_));
+	async_waitset_.detach_condition(dds::core::cond::StatusCondition(*receiver_));
 }

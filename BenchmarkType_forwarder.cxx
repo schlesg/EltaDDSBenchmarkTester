@@ -1,10 +1,16 @@
-#include <dds/pub/ddspub.hpp>
+#pragma once
+
 #include "BenchmarkType_forwarder.hpp"
+
 #include "BenchmarkType.hpp"
 #include "Timer.hpp"
+#include <dds/core/QosProvider.hpp>
+#include <rti/core/cond/AsyncWaitSet.hpp>
+#include <dds/core/cond/StatusCondition.hpp>
+
 
 BenchmarkType_forwarder::BenchmarkType_forwarder(DDS_DomainId_t domain_id, int thread_pool_size, std::string readFromTopic, std::string writeToTopic, int verbosity, int forwardersDepth)
-	: receiver_(dds::core::null), verbosity_(verbosity), totalDiff_(0), now_(std::chrono::system_clock::now()), forwardersDepth_(forwardersDepth)
+	:verbosity_(verbosity), totalDiff_(0), now_(std::chrono::system_clock::now()), forwardersDepth_(forwardersDepth)
 {
 	// Create a DomainParticipant with default Qos
 	dds::domain::DomainParticipant participant(domain_id);
@@ -14,18 +20,18 @@ BenchmarkType_forwarder::BenchmarkType_forwarder(DDS_DomainId_t domain_id, int t
 	dds::topic::Topic<BenchmarkMessageType> topicTo(participant, writeToTopic);
 
 	// Create a DataReader with default Qos (Subscriber created in-line)
-	receiver_ = dds::sub::DataReader<BenchmarkMessageType>(dds::sub::Subscriber(participant), topicFrom);
+	receiver_ = std::make_shared < dds::sub::DataReader<BenchmarkMessageType>>(dds::sub::Subscriber(participant), topicFrom, dds::core::QosProvider::Default().datareader_qos());
 
 	// Create a DataWriter with default Qos (Publisher created in-line)
-	writer_ = new dds::pub::DataWriter<BenchmarkMessageType>(dds::pub::Publisher(participant), topicTo, dds::core::QosProvider::Default().datawriter_qos());
+	writer_ = std::make_shared<dds::pub::DataWriter<BenchmarkMessageType>>(dds::pub::Publisher(participant), topicTo, dds::core::QosProvider::Default().datawriter_qos());
 
 	// DataReader status condition: to process the reception of samples
-	dds::core::cond::StatusCondition reader_status_condition(receiver_);
+	dds::core::cond::StatusCondition reader_status_condition(*receiver_);
 	reader_status_condition.enabled_statuses(dds::core::status::StatusMask::data_available());
 	reader_status_condition->handler(DataAvailableHandler(*this));
-	async_waitset_ = rti::core::cond::AsyncWaitSet(rti::core::cond::AsyncWaitSetProperty().thread_pool_size(thread_pool_size));
-	async_waitset_.attach_condition(reader_status_condition);
-	async_waitset_.start();
+	async_waitset_ = std::make_shared<rti::core::cond::AsyncWaitSet>(rti::core::cond::AsyncWaitSetProperty().thread_pool_size(thread_pool_size));
+	async_waitset_->attach_condition(reader_status_condition);
+	async_waitset_->start();
 
 	if (verbosity_ == 1)
 	{
@@ -38,29 +44,35 @@ BenchmarkType_forwarder::BenchmarkType_forwarder(DDS_DomainId_t domain_id, int t
 void BenchmarkType_forwarder::process_received_samples()
 {
 	// Take all samples This will reset the StatusCondition
-	dds::sub::LoanedSamples<BenchmarkMessageType> samples = receiver_.take();
+	auto samples = receiver_->take();
 
 	// Release status condition in case other threads can process outstanding
 	// samples
-	async_waitset_.unlock_condition(dds::core::cond::StatusCondition(receiver_));
+	async_waitset_->unlock_condition(dds::core::cond::StatusCondition(*receiver_));
 
 	// Process sample
-	for (dds::sub::LoanedSamples<BenchmarkMessageType>::iterator sample_it = samples.begin(); sample_it != samples.end(); sample_it++)
-	{
-		if (sample_it->info().valid())
+	for (auto& sample : samples) {
 		{
-			receivedMessageCount_ += 1;
-			//TODO not fully thread safe
-			//Only write a message each number of forwarders
-			if ((receivedMessageCount_ % this->forwardersDepth_) == 0) {
-				writer_->write(sample_it->data());
+			if (sample.info().valid())
+			{
+				receivedMessageCount_ += 1;
+				//TODO not fully thread safe
+				//Only write a message each number of forwarders
+				if ((receivedMessageCount_ % this->forwardersDepth_) == 0) {
+					auto sampleWrite = writer_->extensions().get_loan();
+					sampleWrite->root().seqNum(sample.data().root().seqNum());
+					sampleWrite->root().sourceTimestampMicrosec(sample.data().root().sourceTimestampMicrosec());
+
+					writer_->write(*sampleWrite);
+				}
 			}
 		}
 	}
 }
+
 BenchmarkType_forwarder::~BenchmarkType_forwarder()
 {
-	async_waitset_.detach_condition(dds::core::cond::StatusCondition(receiver_));
+	async_waitset_->detach_condition(dds::core::cond::StatusCondition(*receiver_));
 }
 
 void BenchmarkType_forwarder::printResult()
@@ -75,7 +87,7 @@ void BenchmarkType_forwarder::printResult()
 }
 double BenchmarkType_forwarder::received_count()
 {
-	return receiver_->datareader_protocol_status().received_sample_count().total();
+	return (*receiver_)->datareader_protocol_status().received_sample_count().total();
 }
 
 double BenchmarkType_forwarder::write_count()
@@ -89,3 +101,4 @@ double BenchmarkType_forwarder::getSecFromStart()
 	double diff = std::chrono::duration_cast<std::chrono::seconds>(end - now_).count();
 	return diff;
 }
+

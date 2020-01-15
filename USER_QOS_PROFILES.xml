@@ -2,66 +2,66 @@
 <dds xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
      xsi:noNamespaceSchemaLocation="C:/Program Files/rti_connext_dds-6.0.0/bin/../resource/schema/rti_dds_qos_profiles.xsd"
      version="6.0.0">
-    <!-- QoS Library containing the QoS profile used in the generated example.
+  <!-- QoS Library containing the QoS profile used in the generated example.
 
         A QoS library is a named set of QoS profiles.
     -->
-    <qos_library name="BenchmarkType_Library">
+  <qos_library name="BenchmarkType_Library">
 
-        <!-- QoS profile used to configure reliable communication between the DataWriter 
+    <!-- QoS profile used to configure reliable communication between the DataWriter 
              and DataReader created in the example code.
 
              A QoS profile groups a set of related QoS.
         -->
-        <qos_profile name="BenchmarkType_Profile"  is_default_qos="true">
-            <!-- QoS used to configure the data writer created in the example code -->                
-            <datawriter_qos>
-                <publication_name>
-                    <name>BenchmarkTypeDataWriter</name>
-                </publication_name>
-              <!--<reliability>
+    <qos_profile name="BenchmarkType_Profile"  is_default_qos="true">
+      <!-- QoS used to configure the data writer created in the example code -->
+      <datawriter_qos>
+        <publication_name>
+          <name>BenchmarkTypeDataWriter</name>
+        </publication_name>
+        <!--<reliability>
                 <kind>RELIABLE_RELIABILITY_QOS</kind>
               </reliability>-->
-            </datawriter_qos>
+      </datawriter_qos>
 
-            <!-- QoS used to configure the data reader created in the example code -->                
-            <datareader_qos>
-                <subscription_name>
-                    <name>BenchmarkTypeDataReader</name>
-                </subscription_name>
-              <!--<reliability>
+      <!-- QoS used to configure the data reader created in the example code -->
+      <datareader_qos>
+        <subscription_name>
+          <name>BenchmarkTypeDataReader</name>
+        </subscription_name>
+        <!--<reliability>
                 <kind>RELIABLE_RELIABILITY_QOS</kind>
               </reliability>-->
-              <history>
-                <depth>100</depth>
-                <kind>KEEP_LAST_HISTORY_QOS</kind>
-              </history>
-            </datareader_qos>
-            <participant_qos>
-                <!--
+        <history>
+          <depth>100</depth>
+          <kind>KEEP_LAST_HISTORY_QOS</kind>
+        </history>
+      </datareader_qos>
+      <participant_qos>
+        <!--
                 The participant name, if it is set, will be displayed in the
                 RTI tools, making it easier for you to tell one
                 application from another when you're debugging.
                 -->
-                <participant_name>
-                    <name>BenchmarkTypeParticipant</name>
-                    <role_name>BenchmarkTypeParticipantRole</role_name>
-                </participant_name>
-              <transport_builtin>
-                <mask>SHMEM</mask>
-                <shmem>
-                  
-                </shmem>
-              </transport_builtin>
+        <participant_name>
+          <name>BenchmarkTypeParticipant</name>
+          <role_name>BenchmarkTypeParticipantRole</role_name>
+        </participant_name>
+        <transport_builtin>
+          <!--<mask>SHMEM</mask>-->
+          <shmem>
 
-              <discovery>
-                <initial_peers>
-                  <element>15@shmem://</element>
-                </initial_peers>
-              </discovery>
-            </participant_qos>
+          </shmem>
+        </transport_builtin>
 
-        </qos_profile>
+        <discovery>
+          <initial_peers>
+            <element>15@shmem://</element>
+          </initial_peers>
+        </discovery>
+      </participant_qos>
 
-    </qos_library>
+    </qos_profile>
+
+  </qos_library>
 </dds>

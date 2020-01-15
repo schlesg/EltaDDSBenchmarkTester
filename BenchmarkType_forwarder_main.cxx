@@ -1,9 +1,13 @@
-#include <algorithm>
-#include <iostream>
-#include <dds/sub/ddssub.hpp>
-#include <dds/core/ddscore.hpp>
-#include <rti/core/cond/AsyncWaitSet.hpp>
+//#include <algorithm>
+//#include <iostream>
+//#include <dds/sub/ddssub.hpp>
+//#include <dds/core/ddscore.hpp>
+//#include <rti/core/cond/AsyncWaitSet.hpp>
 #include "BenchmarkType_forwarder.hpp"
+
+#include <string>
+#include <iostream>
+#include <ctime>
 
 void printUsage()
 {
@@ -13,6 +17,7 @@ void printUsage()
 		"\t-c, -configurationTopic: (1) for write to topic L2 read from topic L1. (2) for write to topic L3 read from topic L2.(default 1) \n"
 		"\t-v, -verbosity: Print verbosity (0) without print (1) print (default 0)\n"
 		"\t-t, -threads: Number of threads used to process sample (default 1)\n"
+		"\t-f, -forwardersDepth: Number of forwarders in the scenario (default 1)\n"
 		"\t-d, -domainId: DomainID (default 0)\n");
 
 	std::cout << USAGE;
@@ -99,6 +104,6 @@ int main(int argc, char const *argv[])
 		return -1;
 	}
 
-	dds::domain::DomainParticipant::finalize_participant_factory();
+	//dds::domain::DomainParticipant::finalize_participant_factory();
 	return 0;
 }

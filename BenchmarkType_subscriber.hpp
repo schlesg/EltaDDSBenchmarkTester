@@ -2,8 +2,8 @@
 #include <dds/core/ddscore.hpp>
 #include <rti/core/cond/AsyncWaitSet.hpp>
 #include <atomic>
+#include "BenchmarkType.hpp"
 
-class BenchmarkMessageType;
 class Timer;
 
 class BenchmarkTypeSubscriber
@@ -24,7 +24,7 @@ public:
 
 public:
 	// Entities to receive data
-	dds::sub::DataReader<BenchmarkMessageType> receiver_;
+	std::shared_ptr <dds::sub::DataReader<BenchmarkMessageType>> receiver_;
 	// Reference to the AWS used for processing the events
 	rti::core::cond::AsyncWaitSet async_waitset_;
 	

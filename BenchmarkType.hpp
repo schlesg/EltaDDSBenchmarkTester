@@ -9,8 +9,8 @@ For more information, type 'rtiddsgen -help' at a command shell
 or consult the RTI Connext manual.
 */
 
-#ifndef BenchmarkType_223200906_hpp
-#define BenchmarkType_223200906_hpp
+#ifndef BenchmarkType_223200961_hpp
+#define BenchmarkType_223200961_hpp
 
 #include <iosfwd>
 
@@ -41,7 +41,9 @@ or consult the RTI Connext manual.
 #include "dds/core/External.hpp"
 #include "rti/core/Pointer.hpp"
 #include "rti/topic/TopicTraits.hpp"
+#include "rti/topic/flat/FlatData.hpp"
 
+#include "rti/zcopy/rtizcopy.hpp"
 #if (defined(RTI_WIN32) || defined (RTI_WINCE) || defined(RTI_INTIME)) && defined(NDDS_USER_DLL_EXPORT)
 /* If the code is building on Windows, stop exporting symbols.
 */
@@ -56,30 +58,91 @@ or consult the RTI Connext manual.
 #define NDDSUSERDllExport __declspec(dllexport)
 #endif
 
-#if (defined(RTI_WIN32) || defined (RTI_WINCE)) && defined(NDDS_USER_DLL_EXPORT)
-// On Windows, dll-export template instantiations of standard types used by
-// other dll-exported types
-template class NDDSUSERDllExport std::allocator<uint8_t>;
-template class NDDSUSERDllExport std::vector<uint8_t >;
-#endif
-class NDDSUSERDllExport BenchmarkMessageType {
+class NDDSUSERDllExport BenchmarkMessageTypeConstOffset 
+: public rti::flat::FinalOffset<BenchmarkMessageTypeConstOffset> {
   public:
-    BenchmarkMessageType();
+    enum { required_alignment = 4 };
 
-    BenchmarkMessageType(
+    static rti::flat::offset_t serialized_size(rti::flat::offset_t initial_position)
+    {
+        static const rti::flat::offset_t sizes[] = {100012, 100012, 100012, 100012};
+        return sizes[initial_position % 4];
+    }
+
+    // Null offset
+    BenchmarkMessageTypeConstOffset()
+    {
+    }
+
+    // Constructor is for internal use only
+    BenchmarkMessageTypeConstOffset(
+        const rti::flat::SampleBase *sample, 
+        rti::flat::offset_t offset)
+        : rti::flat::FinalOffset<BenchmarkMessageTypeConstOffset>(const_cast<rti::flat::SampleBase *>(sample), offset)
+    {
+    }
+
+    int32_t seqNum() const; 
+    DDS_UnsignedLongLong sourceTimestampMicrosec() const; 
+    const rti::flat::PrimitiveArrayOffset<uint8_t, (100000)> buffer() const; 
+};
+class NDDSUSERDllExport BenchmarkMessageTypeOffset 
+: public rti::flat::FinalOffset<BenchmarkMessageTypeOffset> {
+  public:
+    typedef BenchmarkMessageTypeConstOffset ConstOffset;
+
+    enum { required_alignment = 4 };
+
+    static rti::flat::offset_t serialized_size(rti::flat::offset_t initial_position)
+    {
+        static const rti::flat::offset_t sizes[] = {100012, 100012, 100012, 100012};
+        return sizes[initial_position % 4];
+    }
+
+    // Null offset
+    BenchmarkMessageTypeOffset()
+    {
+    }
+
+    // Constructor is for internal use only
+    BenchmarkMessageTypeOffset(
+        rti::flat::SampleBase *sample, 
+        rti::flat::offset_t offset)
+        : rti::flat::FinalOffset<BenchmarkMessageTypeOffset>(sample, offset)
+    {
+    }
+
+    // Const accessors
+    int32_t seqNum() const; 
+    DDS_UnsignedLongLong sourceTimestampMicrosec() const; 
+    const rti::flat::PrimitiveArrayOffset<uint8_t, (100000)> buffer() const; 
+
+    // Modifiers
+    bool seqNum(int32_t value);
+    bool sourceTimestampMicrosec(DDS_UnsignedLongLong value);
+    rti::flat::PrimitiveArrayOffset<uint8_t, (100000)> buffer(); 
+};
+
+typedef rti::flat::Sample<BenchmarkMessageTypeOffset> BenchmarkMessageType;
+
+class NDDSUSERDllExport BenchmarkMessageTypePlainHelper {
+  public:
+    BenchmarkMessageTypePlainHelper();
+
+    BenchmarkMessageTypePlainHelper(
         int32_t seqNum,
         rti::core::uint64 sourceTimestampMicrosec,
-        const rti::core::bounded_sequence<uint8_t, 100000>& buffer);
+        const dds::core::array<uint8_t, 100000>& buffer);
 
     #ifdef RTI_CXX11_RVALUE_REFERENCES
     #ifndef RTI_CXX11_NO_IMPLICIT_MOVE_OPERATIONS
-    BenchmarkMessageType (BenchmarkMessageType&&) = default;
-    BenchmarkMessageType& operator=(BenchmarkMessageType&&) = default;
-    BenchmarkMessageType& operator=(const BenchmarkMessageType&) = default;
-    BenchmarkMessageType(const BenchmarkMessageType&) = default;
+    BenchmarkMessageTypePlainHelper (BenchmarkMessageTypePlainHelper&&) = default;
+    BenchmarkMessageTypePlainHelper& operator=(BenchmarkMessageTypePlainHelper&&) = default;
+    BenchmarkMessageTypePlainHelper& operator=(const BenchmarkMessageTypePlainHelper&) = default;
+    BenchmarkMessageTypePlainHelper(const BenchmarkMessageTypePlainHelper&) = default;
     #else
-    BenchmarkMessageType(BenchmarkMessageType&& other_) OMG_NOEXCEPT;  
-    BenchmarkMessageType& operator=(BenchmarkMessageType&&  other_) OMG_NOEXCEPT;
+    BenchmarkMessageTypePlainHelper(BenchmarkMessageTypePlainHelper&& other_) OMG_NOEXCEPT;  
+    BenchmarkMessageTypePlainHelper& operator=(BenchmarkMessageTypePlainHelper&&  other_) OMG_NOEXCEPT;
     #endif
     #endif 
 
@@ -107,37 +170,52 @@ class NDDSUSERDllExport BenchmarkMessageType {
         m_sourceTimestampMicrosec_ = value;
     }
 
-    rti::core::bounded_sequence<uint8_t, 100000>& buffer() OMG_NOEXCEPT {
+    dds::core::array<uint8_t, 100000>& buffer() OMG_NOEXCEPT {
         return m_buffer_;
     }
 
-    const rti::core::bounded_sequence<uint8_t, 100000>& buffer() const OMG_NOEXCEPT {
+    const dds::core::array<uint8_t, 100000>& buffer() const OMG_NOEXCEPT {
         return m_buffer_;
     }
 
-    void buffer(const rti::core::bounded_sequence<uint8_t, 100000>& value) {
+    void buffer(const dds::core::array<uint8_t, 100000>& value) {
         m_buffer_ = value;
     }
 
-    bool operator == (const BenchmarkMessageType& other_) const;
-    bool operator != (const BenchmarkMessageType& other_) const;
+    bool operator == (const BenchmarkMessageTypePlainHelper& other_) const;
+    bool operator != (const BenchmarkMessageTypePlainHelper& other_) const;
 
-    void swap(BenchmarkMessageType& other_) OMG_NOEXCEPT ;
+    void swap(BenchmarkMessageTypePlainHelper& other_) OMG_NOEXCEPT ;
 
   private:
 
     int32_t m_seqNum_;
     rti::core::uint64 m_sourceTimestampMicrosec_;
-    rti::core::bounded_sequence<uint8_t, 100000> m_buffer_;
+    dds::core::array<uint8_t, 100000> m_buffer_;
 
 };
 
-inline void swap(BenchmarkMessageType& a, BenchmarkMessageType& b)  OMG_NOEXCEPT 
+inline void swap(BenchmarkMessageTypePlainHelper& a, BenchmarkMessageTypePlainHelper& b)  OMG_NOEXCEPT 
 {
     a.swap(b);
 }
 
-NDDSUSERDllExport std::ostream& operator<<(std::ostream& o, const BenchmarkMessageType& sample);
+NDDSUSERDllExport std::ostream& operator<<(std::ostream& o, const BenchmarkMessageTypePlainHelper& sample);
+
+namespace rti {
+    namespace zcopy {
+        namespace topic {
+            template<>
+            struct is_zcopy_type<BenchmarkMessageType> : public dds::core::true_type {};
+            template<>
+            struct is_zcopy_and_flat_data_type<BenchmarkMessageType> : public dds::core::true_type {};
+            template<>
+            struct is_zcopy_type<BenchmarkMessageTypePlainHelper> : public dds::core::true_type {};
+            template<>
+            struct is_zcopy_type_only<BenchmarkMessageTypePlainHelper> : public dds::core::true_type {};
+        }
+    }
+}
 
 namespace rti {
     namespace flat {
@@ -174,11 +252,51 @@ namespace dds {
 
             NDDSUSERDllExport 
             static void from_cdr_buffer(BenchmarkMessageType& sample, const std::vector<char>& buffer);
+            NDDSUSERDllExport
+            static RTIBool native_initialize_sample(void *sample);
             NDDSUSERDllExport 
             static void reset_sample(BenchmarkMessageType& sample);
 
             NDDSUSERDllExport 
             static void allocate_sample(BenchmarkMessageType& sample, int, int);
+
+            static const rti::topic::TypePluginKind::type type_plugin_kind = 
+            rti::topic::TypePluginKind::STL;
+        };
+
+        template<>
+        struct topic_type_name<BenchmarkMessageTypePlainHelper> {
+            NDDSUSERDllExport static std::string value() {
+                return "BenchmarkMessageTypePlainHelper";
+            }
+        };
+
+        template<>
+        struct is_topic_type<BenchmarkMessageTypePlainHelper> : public dds::core::true_type {};
+
+        template<>
+        struct topic_type_support<BenchmarkMessageTypePlainHelper> {
+            NDDSUSERDllExport 
+            static void register_type(
+                dds::domain::DomainParticipant& participant,
+                const std::string & type_name);
+
+            NDDSUSERDllExport 
+            static std::vector<char>& to_cdr_buffer(
+                std::vector<char>& buffer, 
+                const BenchmarkMessageTypePlainHelper& sample,
+                dds::core::policy::DataRepresentationId representation 
+                = dds::core::policy::DataRepresentation::auto_id());
+
+            NDDSUSERDllExport 
+            static void from_cdr_buffer(BenchmarkMessageTypePlainHelper& sample, const std::vector<char>& buffer);
+            NDDSUSERDllExport
+            static RTIBool native_initialize_sample(void *sample);
+            NDDSUSERDllExport 
+            static void reset_sample(BenchmarkMessageTypePlainHelper& sample);
+
+            NDDSUSERDllExport 
+            static void allocate_sample(BenchmarkMessageTypePlainHelper& sample, int, int);
 
             static const rti::topic::TypePluginKind::type type_plugin_kind = 
             rti::topic::TypePluginKind::STL;
@@ -200,11 +318,55 @@ namespace rti {
         template <>
         struct extensibility<BenchmarkMessageType> {
             static const dds::core::xtypes::ExtensibilityKind::type kind =
-            dds::core::xtypes::ExtensibilityKind::EXTENSIBLE;                
+            dds::core::xtypes::ExtensibilityKind::FINAL;                
+        };
+
+        #ifndef NDDS_STANDALONE_TYPE
+        template<>
+        struct dynamic_type<BenchmarkMessageTypePlainHelper> {
+            typedef dds::core::xtypes::StructType type;
+            NDDSUSERDllExport static const dds::core::xtypes::StructType& get();
+        };
+        #endif
+
+        template <>
+        struct extensibility<BenchmarkMessageTypePlainHelper> {
+            static const dds::core::xtypes::ExtensibilityKind::type kind =
+            dds::core::xtypes::ExtensibilityKind::FINAL;                
         };
 
     }
 }
+
+namespace rti { namespace xcdr {
+        template <>
+        struct type_programs<BenchmarkMessageType> {
+            static RTIXCdrInterpreterPrograms * get();
+        };
+    } }
+
+namespace rti { namespace flat {
+
+        template <>
+        struct flat_type_traits<BenchmarkMessageType> {
+            typedef BenchmarkMessageTypePlainHelper plain_type;
+            typedef BenchmarkMessageTypeOffset offset;
+        };
+
+        template <>
+        struct flat_type_traits<BenchmarkMessageTypeOffset> {
+            typedef BenchmarkMessageType flat_type;
+            typedef BenchmarkMessageTypePlainHelper plain_type;
+        };
+
+        template <>
+        struct flat_type_traits<BenchmarkMessageTypeConstOffset> 
+        : flat_type_traits<BenchmarkMessageTypeOffset> {
+        };
+
+    } } // namespace rti::flat
+
+#include "rti/flat/FlatSampleImpl.hpp"
 
 #if (defined(RTI_WIN32) || defined (RTI_WINCE) || defined(RTI_INTIME)) && defined(NDDS_USER_DLL_EXPORT)
 /* If the code is building on Windows, stop exporting symbols.
@@ -213,5 +375,5 @@ namespace rti {
 #define NDDSUSERDllExport
 #endif
 
-#endif // BenchmarkType_223200906_hpp
+#endif // BenchmarkType_223200961_hpp
 

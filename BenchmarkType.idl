@@ -1,5 +1,8 @@
+@final
+@transfer_mode(SHMEM_REF)
+@language_binding(FLAT_DATA)
 struct BenchmarkMessageType{
 	long seqNum;
     unsigned long long sourceTimestampMicrosec;
-	sequence<octet, 100000> buffer;
+	octet buffer[100000];
 };
